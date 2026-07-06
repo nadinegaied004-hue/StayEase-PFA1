@@ -191,13 +191,20 @@ const footerHTML = `
       padding-top:0.6rem;
       border-top:1px solid rgba(244,162,97,0.25);
     ">
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#059669,#10b981);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        </div>
+        <div style="text-align:left;">
+          <div style="color:#4ade80;font-weight:700;font-size:0.8rem;">Données sécurisées</div>
+          <div style="color:#8a9aa6;font-size:0.65rem;">Vos informations sont protégées</div>
+        </div>
+      </div>
       <p style="
         color:#8a9aa6;
         font-size:0.72rem;
         margin:0;
       ">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" style="vertical-align:middle;margin-right:3px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10" stroke="#4ade80"/></svg>
-        Données sécurisées |
         © 2026 StayEase |
         <a href="#" style="color:#b8c5cc;">Mentions légales</a> |
         <a href="#" style="color:#b8c5cc;">Confidentialité</a>
