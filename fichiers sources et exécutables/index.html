@@ -70,22 +70,22 @@
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div class="text-center p-6 bg-card rounded-xl shadow-md border border-gray-200">
-            <div class="text-3xl mb-3">🏅</div>
+            <div class="mb-3 flex justify-center"><div style="width:56px;height:56px;background:linear-gradient(135deg,#f59e0b,#f97316);border-radius:16px;display:flex;align-items:center;justify-content:center;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg></div></div>
             <h3 class="font-semibold mb-2">Expérience personnalisée</h3>
             <p class="text-sm text-muted-foreground">Des recommandations adaptées</p>
           </div>
           <div class="text-center p-6 bg-card rounded-xl shadow-md border border-gray-200">
-            <div class="text-3xl mb-3">🏠</div>
+            <div class="mb-3 flex justify-center"><div style="width:56px;height:56px;background:linear-gradient(135deg,#3b82f6,#6366f1);border-radius:16px;display:flex;align-items:center;justify-content:center;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div></div>
             <h3 class="font-semibold mb-2">Logements variés</h3>
             <p class="text-sm text-muted-foreground">Hôtel, maisons, fermes</p>
           </div>
           <div class="text-center p-6 bg-card rounded-xl shadow-md border border-gray-200">
-            <div class="text-3xl mb-3">⚡</div>
+            <div class="mb-3 flex justify-center"><div style="width:56px;height:56px;background:linear-gradient(135deg,#10b981,#059669);border-radius:16px;display:flex;align-items:center;justify-content:center;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div></div>
             <h3 class="font-semibold mb-2">Service rapide</h3>
             <p class="text-sm text-muted-foreground">Réservation en quelques clics</p>
           </div>
           <div class="text-center p-6 bg-card rounded-xl shadow-md border border-gray-200">
-            <div class="text-3xl mb-3">����</div>
+            <div class="mb-3 flex justify-center"><div style="width:56px;height:56px;background:linear-gradient(135deg,#059669,#10b981);border-radius:16px;display:flex;align-items:center;justify-content:center;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div></div>
             <h3 class="font-semibold mb-2">Données sécurisées</h3>
             <p class="text-sm text-muted-foreground">Vos informations sont protégées</p>
           </div>
@@ -144,11 +144,9 @@
           var nom = user.nom || '';
           var fullName = prenom + ' ' + nom;
           
-          // Update hero section
           document.getElementById('hero-title').textContent = 'Veuillez réserver, ' + fullName + '!';
           document.getElementById('hero-subtitle').textContent = 'Trouvez votre prochaine destination de rêve';
           
-          // Hide default CTA button on hero and show history link
           document.getElementById('cta-button').style.display = 'inline-block';
           document.getElementById('history-link').style.display = 'inline-block';
         } catch(e) {
@@ -158,7 +156,6 @@
     });
   </script>
   <script>
-    // Hero carousel
     (function() {
       var slides = document.querySelectorAll('.hero-slide');
       var current = 0;
