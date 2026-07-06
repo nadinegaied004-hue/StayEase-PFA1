@@ -9,11 +9,11 @@ const navbarHTML = `
       </a>
     </div>
     <div style="display:flex;align-items:center;position:absolute;left:50%;transform:translateX(-50%);">
-      <a href="index.html" style="color:#333;font-weight:600;text-decoration:none;padding:8px 16px;border-radius:25px;font-size:0.9rem;margin-right:4px;">Accueil</a>
-      <a href="hotels.html" style="color:#333;font-weight:600;text-decoration:none;padding:8px 16px;border-radius:25px;font-size:0.9rem;margin-right:4px;">Logements</a>
-      <a href="avis.html" style="color:#333;font-weight:600;text-decoration:none;padding:8px 16px;border-radius:25px;font-size:0.9rem;margin-right:4px;">Avis Clients</a>
-      <a href="avis-personnel.html" style="color:#333;font-weight:600;text-decoration:none;padding:8px 16px;border-radius:25px;font-size:0.9rem;margin-right:4px;">Avis Personnel</a>
-      <a id="nav-update" href="proprietaire.html" style="color:#333;font-weight:600;text-decoration:none;padding:8px 16px;border-radius:25px;font-size:0.9rem;display:none;margin-right:4px;">Mise à jour</a>
+      <a href="index.html" style="color:#333;font-weight:600;text-decoration:none;padding:8px 16px;border-radius:25px;font-size:0.9rem;margin-right:4px;display:flex;align-items:center;gap:6px;"><i data-lucide="home" style="width:16px;height:16px;"></i>Accueil</a>
+      <a href="hotels.html" style="color:#333;font-weight:600;text-decoration:none;padding:8px 16px;border-radius:25px;font-size:0.9rem;margin-right:4px;display:flex;align-items:center;gap:6px;"><i data-lucide="building-2" style="width:16px;height:16px;"></i>Logements</a>
+      <a href="avis.html" style="color:#333;font-weight:600;text-decoration:none;padding:8px 16px;border-radius:25px;font-size:0.9rem;margin-right:4px;display:flex;align-items:center;gap:6px;"><i data-lucide="star" style="width:16px;height:16px;"></i>Avis Clients</a>
+      <a href="avis-personnel.html" style="color:#333;font-weight:600;text-decoration:none;padding:8px 16px;border-radius:25px;font-size:0.9rem;margin-right:4px;display:flex;align-items:center;gap:6px;"><i data-lucide="clipboard-list" style="width:16px;height:16px;"></i>Avis Personnel</a>
+      <a id="nav-update" href="proprietaire.html" style="color:#333;font-weight:600;text-decoration:none;padding:8px 16px;border-radius:25px;font-size:0.9rem;display:none;margin-right:4px;"><i data-lucide="settings" style="width:16px;height:16px;"></i>Mise à jour</a>
     </div>
     <div style="display:flex;align-items:center;">
       <span id="user-name" style="color:#333;font-weight:600;font-size:0.9rem;margin-right:12px;"></span>
@@ -79,8 +79,7 @@ const footerHTML = `
             justify-content:center;
             color:white;
             text-decoration:none;
-            font-size:0.75rem;
-          ">f</a>
+          "><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></a>
 
           <a href="#" style="
             width:30px;
@@ -92,8 +91,7 @@ const footerHTML = `
             justify-content:center;
             color:white;
             text-decoration:none;
-            font-size:0.75rem;
-          ">in</a>
+          "><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg></a>
 
           <a href="#" style="
             width:30px;
@@ -105,8 +103,7 @@ const footerHTML = `
             justify-content:center;
             color:white;
             text-decoration:none;
-            font-size:0.75rem;
-          ">X</a>
+          "><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
         </div>
       </div>
 
@@ -117,7 +114,8 @@ const footerHTML = `
           color:#f4a261;
           font-size:0.9rem;
         ">
-          🏠 Hébergements
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f4a261" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Hébergements
         </h4>
 
         <ul style="
@@ -142,7 +140,8 @@ const footerHTML = `
           color:#f4a261;
           font-size:0.9rem;
         ">
-          ⭐ Services
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f4a261" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Services
         </h4>
 
         <ul style="
@@ -167,7 +166,8 @@ const footerHTML = `
           color:#f4a261;
           font-size:0.9rem;
         ">
-          📞 Contact
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f4a261" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+          Contact
         </h4>
 
         <ul style="
@@ -178,9 +178,9 @@ const footerHTML = `
           font-size:0.76rem;
           line-height:1.6;
         ">
-          <li>📧 contact@stayease.tn</li>
-          <li>📞 +216 55 123 456</li>
-          <li>📍 Tunis</li>
+          <li><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> contact@stayease.tn</li>
+          <li><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg> +216 55 123 456</li>
+          <li><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg> Tunis</li>
         </ul>
       </div>
 
@@ -196,6 +196,8 @@ const footerHTML = `
         font-size:0.72rem;
         margin:0;
       ">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" style="vertical-align:middle;margin-right:3px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10" stroke="#4ade80"/></svg>
+        Données sécurisées |
         © 2026 StayEase |
         <a href="#" style="color:#b8c5cc;">Mentions légales</a> |
         <a href="#" style="color:#b8c5cc;">Confidentialité</a>
