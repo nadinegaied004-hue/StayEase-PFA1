@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StayEase - Trouvez votre logement idéal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .object-cover { filter: brightness(0.92) contrast(0.9) saturate(0.85) sepia(0.08); }
+    .hero-slides { position: absolute; inset: 0; }
+    .hero-slide { position: absolute; inset: 0; opacity: 0; transition: opacity 1s ease; transform: translateY(-20px); }
+    .hero-slide.active { opacity: 1; transform: translateY(0); }
+  </style>
+  <script src="navbar.js"></script>
+</head>
+<body style="margin:0;min-height:100vh;display:flex;flex-direction:column;font-family:system-ui,sans-serif;">
+  <div id="navbar" style="flex:none;"></div>
+  
+  <main style="flex:1;margin-top:70px;">
+    <!-- Hero -->
+    <section class="relative h-[70vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+      <div class="hero-slides">
+        <img src="images/photo en haut/four-seasons-hotel-tunis.jpg" class="hero-slide active w-full h-full object-cover" alt="Hotel">
+        <img src="images/photo en haut/Medina-Solaria-Thalasso.jpg" class="hero-slide w-full h-full object-cover" alt="Hotel">
+        <img src="images/photo en haut/MHDG-1.jpg" class="hero-slide w-full h-full object-cover" alt="Hotel">
+        <img src="images/photo en haut/Thalassa-hotel-monastir.jpg" class="hero-slide w-full h-full object-cover" alt="Hotel">
+      </div>
+      <div class="absolute inset-0 bg-hotel-dark/60"></div>
+      <div class="relative z-10 text-center px-4 max-w-3xl text-white">
+        <h1 id="hero-title" class="text-5xl md:text-7xl font-bold mb-4" style="font-family:'Playfair Display',serif;">Trouvez votre logement idéal</h1>
+        <p id="hero-subtitle" class="text-xl text-white/80 mb-8">Les meilleures activités et hébergements en Tunisie</p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a href="hotels.html" style="background:#e67e22;color:white;padding:16px 32px;border-radius:8px;font-size:1.125rem;font-weight:700;text-decoration:none;display:inline-block;" id="cta-button">Explorer les logements</a>
+          <a id="history-link" href="historique.html" style="background:#264653;color:white;padding:16px 32px;border-radius:8px;font-size:1.125rem;font-weight:700;text-decoration:none;display:none;inline-block;">Voir mon historique</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="py-16" style="background:#f5f0e8;">
+      <div class="container mx-auto px-4">
+        <div class="text-center mb-10">
+          <h2 class="text-4xl font-bold mb-2" style="font-family:'Playfair Display',serif">Notre communauté en chiffres</h2>
+          <p class="text-gray-500">Visiteurs par mois</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+          <div class="bg-card rounded-lg p-6 text-center shadow-sm border border-gray-200">
+            <div class="text-4xl font-bold text-hotel-gold mb-2">4 000 000+</div>
+            <div class="text-gray-500">Visiteurs par mois</div>
+          </div>
+          <div class="bg-card rounded-lg p-6 text-center shadow-sm border border-gray-200">
+            <div class="text-4xl font-bold text-hotel-gold mb-2">12 500+</div>
+            <div class="text-gray-500">Logements</div>
+          </div>
+          <div class="bg-card rounded-lg p-6 text-center shadow-sm border border-gray-200">
+            <div class="text-4xl font-bold text-hotel-gold mb-2">4.8/5</div>
+            <div class="text-gray-500">Note moyenne</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="py-16 bg-gray-100">
+      <div class="container mx-auto px-4">
+        <div class="text-center mb-10">
+          <h2 class="section-title text-center mb-2">Pourquoi choisir StayEase</h2>
+          <p class="text-muted-foreground">Une expérience unique en Tunisie</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div class="text-center p-6 bg-card rounded-xl shadow-md border border-gray-200">
+            <div class="text-3xl mb-3">🏅</div>
+            <h3 class="font-semibold mb-2">Expérience personnalisée</h3>
+            <p class="text-sm text-muted-foreground">Des recommandations adaptées</p>
+          </div>
+          <div class="text-center p-6 bg-card rounded-xl shadow-md border border-gray-200">
+            <div class="text-3xl mb-3">🏠</div>
+            <h3 class="font-semibold mb-2">Logements variés</h3>
+            <p class="text-sm text-muted-foreground">Hôtel, maisons, fermes</p>
+          </div>
+          <div class="text-center p-6 bg-card rounded-xl shadow-md border border-gray-200">
+            <div class="text-3xl mb-3">⚡</div>
+            <h3 class="font-semibold mb-2">Service rapide</h3>
+            <p class="text-sm text-muted-foreground">Réservation en quelques clics</p>
+          </div>
+          <div class="text-center p-6 bg-card rounded-xl shadow-md border border-gray-200">
+            <div class="text-3xl mb-3">����</div>
+            <h3 class="font-semibold mb-2">Données sécurisées</h3>
+            <p class="text-sm text-muted-foreground">Vos informations sont protégées</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Destinations -->
+    <section class="py-16 bg-card">
+      <div class="container mx-auto px-4">
+        <h2 class="section-title text-center mb-2">Destinations populaires</h2>
+        <p class="text-muted-foreground text-center mb-10">Découvrez les meilleures destinations</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <a href="hotels.html?ville=Hammamet" class="group relative h-48 rounded-xl overflow-hidden block">
+            <img src="images/hammamet.jpg" alt="Hammamet" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors"></div>
+            <div class="absolute bottom-4 left-4 text-white font-semibold text-xl">Hammamet</div>
+          </a>
+          <a href="hotels.html?ville=Tunis" class="group relative h-48 rounded-xl overflow-hidden block">
+            <img src="images/maison d hote.webp" alt="Tunis" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors"></div>
+            <div class="absolute bottom-4 left-4 text-white font-semibold text-xl">Tunis</div>
+          </a>
+          <a href="hotels.html?ville=Sousse" class="group relative h-48 rounded-xl overflow-hidden block">
+            <img src="images/sousse.jpg" alt="Sousse" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors"></div>
+            <div class="absolute bottom-4 left-4 text-white font-semibold text-xl">Sousse</div>
+          </a>
+          <a href="hotels.html?ville=Djerba" class="group relative h-48 rounded-xl overflow-hidden block">
+            <img src="images/villa jerba.webp" alt="Djerba" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors"></div>
+            <div class="absolute bottom-4 left-4 text-white font-semibold text-xl">Djerba</div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-16 bg-gray-100 text-center">
+      <h2 class="section-title mb-4">Prêt à explorer la Tunisie?</h2>
+      <p class="text-muted-foreground mb-8">Réservez votre prochain séjour</p>
+      <a href="hotels.html" class="btn-primary text-lg">Découvrir les logements</a>
+    </section>
+</main>
+
+  <div id="footer" style="flex:none;"></div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var userStr = localStorage.getItem('user');
+      
+      if (userStr) {
+        try {
+          var user = JSON.parse(userStr);
+          var prenom = user.prenom || '';
+          var nom = user.nom || '';
+          var fullName = prenom + ' ' + nom;
+          
+          // Update hero section
+          document.getElementById('hero-title').textContent = 'Veuillez réserver, ' + fullName + '!';
+          document.getElementById('hero-subtitle').textContent = 'Trouvez votre prochaine destination de rêve';
+          
+          // Hide default CTA button on hero and show history link
+          document.getElementById('cta-button').style.display = 'inline-block';
+          document.getElementById('history-link').style.display = 'inline-block';
+        } catch(e) {
+          console.error('Error parsing user data:', e);
+        }
+      }
+    });
+  </script>
+  <script>
+    // Hero carousel
+    (function() {
+      var slides = document.querySelectorAll('.hero-slide');
+      var current = 0;
+      if (slides.length > 1) {
+        setInterval(function() {
+          slides[current].classList.remove('active');
+          current = (current + 1) % slides.length;
+          slides[current].classList.add('active');
+        }, 5000);
+      }
+    })();
+  </script>
+</body>
+</html>

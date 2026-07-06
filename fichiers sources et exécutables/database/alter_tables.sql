@@ -1,0 +1,188 @@
+-- =====================================================
+-- StayEase2 - ALTER TABLE SCRIPT
+-- (Pour mettre à jour une base existante)
+-- =====================================================
+
+USE stayease;
+
+-- =====================================================
+-- TABLES DES UTILISATEURS (si elles n'existent pas)
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS proprietaire (
+    ID_PROPRIETAIRE INT PRIMARY KEY,
+    NOM_PROP VARCHAR(100) NOT NULL,
+    PRENOM_PROP VARCHAR(100) NOT NULL,
+    ADRESSE_EMAIL_PROP VARCHAR(150) UNIQUE NOT NULL,
+    MOT_DE_PASSE_PROP VARCHAR(255) NOT NULL,
+    TELEPHONE_PROP VARCHAR(20),
+    DATE_INSCRIPTION_PROP TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS locataire (
+    ID_LOCATAIRE INT PRIMARY KEY,
+    NOM_LOC VARCHAR(100) NOT NULL,
+    PRENOM_LOC VARCHAR(100) NOT NULL,
+    ADRESSE_EMAIL_LOC VARCHAR(150) UNIQUE NOT NULL,
+    MOT_DE_PASSE_LOC VARCHAR(255) NOT NULL,
+    TELEPHONE_LOC VARCHAR(20),
+    DATE_INSCRIPTION_LOC TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- =====================================================
+-- TABLES DES LOGEMENTS
+-- =====================================================
+
+-- Ajouter les colonnes manquantes à logement si nécessaire
+ALTER TABLE logement 
+ADD COLUMN IF NOT EXISTS TITRE_LOG VARCHAR(200),
+ADD COLUMN IF NOT EXISTS DESCRIPTION_LOGEMENT TEXT,
+ADD COLUMN IF NOT EXISTS ADRESSE_LOG VARCHAR(255),
+ADD COLUMN IF NOT EXISTS VILLE_LOG VARCHAR(100),
+ADD COLUMN IF NOT EXISTS PRIX_LOG DECIMAL(10,2),
+ADD COLUMN IF NOT EXISTS NB_CHAMBRES INT DEFAULT 1,
+ADD COLUMN IF NOT EXISTS NB_SALLE_BAIN INT DEFAULT 1,
+ADD COLUMN IF NOT EXISTS CAPACITE_MAX INT DEFAULT 2,
+ADD COLUMN IF NOT EXISTS TYPE_LOG ENUM('hotel', 'appartement', 'villa', 'maison_hote') DEFAULT 'appartement',
+ADD COLUMN IF NOT EXISTS EQUIPEMENTS_LOG TEXT,
+ADD COLUMN IF NOT EXISTS IMAGE_PRINCIPALE VARCHAR(500),
+ADD COLUMN IF NOT EXISTS STATUT_LOG ENUM('disponible', 'reserve', 'indisponible') DEFAULT 'disponible',
+ADD COLUMN IF NOT EXISTS DATE_CREATION TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN IF NOT EXISTS NB_AVIS INT DEFAULT 0,
+ADD COLUMN IF NOT EXISTS NOTE_MOYENNE DECIMAL(3,2) DEFAULT 0;
+
+-- =====================================================
+-- TABLE DES ATTRACTIONS
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS attraction_et_reference (
+    ID_ATTRACTION VARCHAR(50) PRIMARY KEY,
+    NOM_ATTRACTION VARCHAR(200) NOT NULL,
+    DESCRIPTION TEXT,
+    TYPE_ATT VARCHAR(100),
+    LOCALISATION VARCHAR(200),
+    VILLE_ATT VARCHAR(100),
+    IMAGE_ATTR VARCHAR(500),
+    DISTANCE_KM DECIMAL(10,2)
+) ENGINE=InnoDB;
+
+-- Table liaison logement-attractions
+CREATE TABLE IF NOT EXISTS logement_attraction (
+    ID_LOGEMENT INT NOT NULL,
+    ID_ATTRACTION VARCHAR(50) NOT NULL,
+    PRIMARY KEY (ID_LOGEMENT, ID_ATTRACTION),
+    FOREIGN KEY (ID_LOGEMENT) REFERENCES logement(ID_LOGEMENT) ON DELETE CASCADE,
+    FOREIGN KEY (ID_ATTRACTION) REFERENCES attraction_et_reference(ID_ATTRACTION)
+) ENGINE=InnoDB;
+
+-- =====================================================
+-- TABLE DES ÉVÉNEMENTS
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS evenement (
+    ID_EVENEMENT VARCHAR(50) PRIMARY KEY,
+    NOM_EVENEMENT VARCHAR(200) NOT NULL,
+    DESCRIPTION TEXT,
+    TYPE_EVENEMENT VARCHAR(100),
+    LIEU_EVENEMENT VARCHAR(200),
+    PRIX_MIN_BILLET DECIMAL(10,2),
+    PRIX_MAX_BILLET DECIMAL(10,2),
+    DATE_DEB_EV DATE,
+    DATE_FIN_EV DATE,
+    VILLE_EV VARCHAR(100),
+    IMAGE_EV VARCHAR(500)
+) ENGINE=InnoDB;
+
+-- Table liaison logement-événements
+CREATE TABLE IF NOT EXISTS logement_evenement (
+    ID_LOGEMENT INT NOT NULL,
+    ID_EVENEMENT VARCHAR(50) NOT NULL,
+    PRIMARY KEY (ID_LOGEMENT, ID_EVENEMENT),
+    FOREIGN KEY (ID_LOGEMENT) REFERENCES logement(ID_LOGEMENT) ON DELETE CASCADE,
+    FOREIGN KEY (ID_EVENEMENT) REFERENCES evenement(ID_EVENEMENT)
+) ENGINE=InnoDB;
+
+-- =====================================================
+-- AVIS LOGEMENTS (ajouter colonnes)
+-- =====================================================
+
+ALTER TABLE avis_logement
+ADD COLUMN IF NOT EXISTS ID_RESERVATION INT,
+ADD COLUMN IF NOT EXISTS NOTE_PROPRETE_LOG INT CHECK (NOTE_PROPRETE_LOG BETWEEN 1 AND 5),
+ADD COLUMN IF NOT EXISTS NOTE_EMPLACEMENT_LOG INT CHECK (NOTE_EMPLACEMENT_LOG BETWEEN 1 AND 5),
+ADD COLUMN IF NOT EXISTS NOTE_RAPPORT_QUALITE_PRIX_LOG INT CHECK (NOTE_RAPPORT_QUALITE_PRIX_LOG BETWEEN 1 AND 5),
+ADD COLUMN IF NOT EXISTS TITRE_LOG VARCHAR(200),
+ADD COLUMN IF NOT EXISTS DERNIERE_MAJ_LOG TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+-- Clé étrangère pour avis_logement -> reservation
+ALTER TABLE avis_logement 
+ADD CONSTRAINT IF NOT EXISTS fk_avis_logement_reservation 
+FOREIGN KEY (ID_RESERVATION) REFERENCES reservation(ID_RESERVATION);
+
+-- =====================================================
+-- AVIS ATTRACTIONS
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS avis_attraction (
+    ID_AVIS_ATT INT PRIMARY KEY,
+    ID_LOCATAIRE INT NOT NULL,
+    ID_ATTRACTION VARCHAR(50) NOT NULL,
+    NOTE_GLOBALE_ATT INT CHECK (NOTE_GLOBALE_ATT BETWEEN 1 AND 5),
+    CONTENU_ATT TEXT,
+    DERNIERE_MAJ_ATT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ID_LOCATAIRE) REFERENCES locataire(ID_LOCATAIRE),
+    FOREIGN KEY (ID_ATTRACTION) REFERENCES attraction_et_reference(ID_ATTRACTION)
+) ENGINE=InnoDB;
+
+-- =====================================================
+-- AVIS ÉVÉNEMENTS
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS avis_evenement (
+    ID_AVIS INT PRIMARY KEY,
+    ID_LOCATAIRE INT NOT NULL,
+    ID_EVENEMENT VARCHAR(50) NOT NULL,
+    NOTE_GLOBALE_EV INT CHECK (NOTE_GLOBALE_EV BETWEEN 1 AND 5),
+    CONTENU_EV TEXT,
+    DERNIERE_MAJ_EV TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ID_LOCATAIRE) REFERENCES locataire(ID_LOCATAIRE),
+    FOREIGN KEY (ID_EVENEMENT) REFERENCES evenement(ID_EVENEMENT)
+) ENGINE=InnoDB;
+
+-- =====================================================
+-- VUE POUR AVIS AVEC NOM COMPLET
+-- =====================================================
+
+CREATE OR REPLACE VIEW v_avis_logement_complet AS
+SELECT 
+    al.ID_AVIS,
+    CONCAT(loc.PRENOM_LOC, ' ', loc.NOM_LOC) AS NOM_COMPLET,
+    loc.ADRESSE_EMAIL_LOC,
+    al.ID_LOGEMENT,
+    lg.TITRE_LOG AS NOM_LOGEMENT,
+    lg.VILLE_LOG,
+    al.NOTE_GLOBALE_LOG,
+    al.NOTE_PROPRETE_LOG,
+    al.NOTE_EMPLACEMENT_LOG,
+    al.NOTE_RAPPORT_QUALITE_PRIX_LOG,
+    al.CONTENU_LOG,
+    al.TITRE_LOG AS TITRE_AVIS,
+    al.DERNIERE_MAJ_LOG
+FROM avis_logement al
+JOIN locataire loc ON al.ID_LOCATAIRE = loc.ID_LOCATAIRE
+JOIN logement lg ON al.ID_LOGEMENT = lg.ID_LOGEMENT;
+
+-- =====================================================
+-- PROCÉDURE POUR METTRE À JOUR NB_AVIS
+-- =====================================================
+
+DELIMITER //
+CREATE PROCEDURE IF NOT EXISTS update_nb_avis_logement(IN p_id_logement INT)
+BEGIN
+    DECLARE v_count INT;
+    SELECT COUNT(*) INTO v_count FROM avis_logement WHERE ID_LOGEMENT = p_id_logement;
+    UPDATE logement SET NB_AVIS = v_count WHERE ID_LOGEMENT = p_id_logement;
+END //
+DELIMITER ;
+
+SELECT 'Alter tables exécutées avec succès!' AS Message;

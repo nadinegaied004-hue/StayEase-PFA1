@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StayEase - Logements</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+  <script src="navbar.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#f4a261',
+            'primary-hover': '#e76f51',
+            'primary-light': '#fef3e2',
+            'hotel-dark': '#264653',
+            'hotel-cream': '#fefae0',
+            background: '#fdfbf7',
+            card: '#ffffff',
+            muted: '#f8f5f2',
+            'muted-foreground': '#78716c',
+            foreground: '#292524',
+            border: '#e7e5e4',
+            input: '#e7e5e4',
+            accent: '#e8a87c',
+          },
+          fontFamily: {
+            display: ['Quicksand', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
+    body { font-family: 'Quicksand', system-ui, sans-serif; background-color: #fdfbf7; color: #292524; }
+    body.dark { --bg-color: #1c1917; --text-color: #fafaf9; --card-bg: #292524; --muted-bg: #44403c; }
+    body.dark .navbar { background: #ffffff; }
+    body.dark .text-foreground { color: #fafaf9; }
+    body.dark .text-muted-foreground { color: #a8a29e; }
+    body.dark .bg-card { background: #292524; }
+    body.dark .bg-muted { background: #44403c; }
+    body.dark .border-border { border-color: #57534e; }
+    body.dark footer { background: #1c1917; }
+    
+    .btn-primary { display: inline-block; padding: 0.75rem 1.75rem; background: linear-gradient(135deg, #f4a261 0%, #e76f51 100%); color: white; border-radius: 50px; font-weight: 600; font-size: 0.95rem; letter-spacing: 0.02em; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); text-decoration: none; box-shadow: 0 4px 15px rgba(244, 162, 97, 0.3); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(244, 162, 97, 0.4); }
+    
+    .btn-outline { display: inline-block; padding: 0.75rem 1.75rem; border: 2px solid #f4a261; color: #f4a261; border-radius: 50px; font-weight: 600; font-size: 0.95rem; text-decoration: none; transition: all 0.3s ease; }
+    .btn-outline:hover { background: #f4a261; color: white; }
+    
+    .section-title { font-size: 1.5rem; font-weight: 700; color: #264653; }
+    
+    .card { background: #ffffff; border-radius: 24px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06); transition: all 0.3s ease; }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1); }
+    
+    .input-field { width: 100%; padding: 0.75rem 1rem; border: 2px solid #e7e5e4; border-radius: 12px; font-size: 0.95rem; transition: all 0.3s ease; background: #fff; }
+    .input-field:focus { outline: none; border-color: #f4a261; box-shadow: 0 0 0 3px rgba(244, 162, 97, 0.15); }
+    
+    .hotel-table { border-collapse: collapse; width: 100%; }
+    .hotel-table th, .hotel-table td { padding: 0.35rem 0.6rem; border-bottom: 1px solid #e7e5e4; vertical-align: middle; white-space: nowrap; font-size: 0.75rem; }
+    .hotel-table thead th { position: sticky; top: 0; background: #f8f5f2; font-weight: 600; text-align: center; font-size: 0.85rem; z-index: 10; }
+    .hotel-table td { text-align: center; }
+    .hotel-table td:first-child { text-align: left; min-width: 140px; }
+    .hotel-table tr:hover { background: #f9fafb; }
+    
+    .popup-overlay { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; }
+    .popup-content { background: white; border-radius: 0.75rem; border: 1px solid #e5e7eb; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); max-width: 32rem; width: 100%; margin: 1rem; padding: 1.5rem; position: relative; max-height: 90vh; overflow-y: auto; }
+    
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    .nav-link { 
+      padding: 0.6rem 1.2rem; 
+      border-radius: 50px; 
+      color: #292524; 
+      transition: all 0.3s ease; 
+      font-weight: 500;
+    }
+    .nav-link:hover { background-color: #f8f5f2; color: #f4a261; }
+    .nav-link-active { background-color: #fef3e2; color: #f4a261; }
+    .lang-menu { 
+      position: absolute; 
+      right: 0; 
+      top: 100%; 
+      margin-top: 0.5rem; 
+      background: white; 
+      border: 1px solid #e7e5e4; 
+      border-radius: 16px; 
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1); 
+      min-width: 8rem; 
+      z-index: 50; 
+      padding: 0.5rem;
+    }
+    .lang-menu button { 
+      display: block; 
+      width: 100%; 
+      text-align: left; 
+      padding: 0.75rem 1rem; 
+      font-size: 0.95rem; 
+      border-radius: 12px;
+    }
+    .lang-menu button:hover { background-color: #f8f5f2; }
+    .mobile-menu { background: white; border-bottom: 1px solid #e7e5e4; }
+    body.dark .mobile-menu { background: #292524; }
+    .theme-btn { cursor: pointer; padding: 0.5rem; border-radius: 50px; }
+    .theme-btn:hover { background-color: #f8f5f2; }
+    
+    @media (max-width: 768px) { .desktop-nav { display: none; } .mobile-menu-btn { display: block; } }
+    @media (min-width: 769px) { .mobile-menu { display: none !important; } .mobile-menu-btn { display: none; } }
+    
+    .calendar-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+    .calendar-day { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 0.875rem; cursor: default; }
+    .calendar-day.header { font-weight: 600; color: #6b7280; font-size: 0.75rem; }
+    .calendar-day.available { background: #f4a261; color: white; font-weight: 500; cursor: pointer; }
+    .calendar-day.available:hover { background: #d97706; }
+    .calendar-day.event { background: #e76f51; color: white; font-weight: 500; cursor: pointer; }
+    .calendar-day.event:hover { background: #d45a3a; }
+    .calendar-day.unavailable { background: #d1d5db; color: #7f8c8d; }
+    .calendar-day.other-month { color: #e5e7eb; }
+    .calendar-day.today { border: 2px solid #f4a261; }
+    
+    .hover-tooltip { position: relative; cursor: pointer; }
+    .hover-card {
+      position: fixed;
+      z-index: 9999;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      padding: 0;
+      display: none;
+      width: 400px;
+    }
+    .hover-card.show { display: block; }
+    .hover-card img { width: 100%; height: 160px; object-fit: cover; border-radius: 12px 12px 0 0; }
+    .hover-card .hover-content { padding: 12px; }
+    .hover-card .hover-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+    .hover-card .hover-row { display: flex; gap: 12px; margin-bottom: 6px; }
+    .hover-card .hover-label { font-size: 0.75rem; color: #78716c; font-weight: 600; }
+    .hover-card .hover-value { font-size: 0.8rem; color: #292524; }
+    .hover-card .hover-desc { font-size: 0.8rem; color: #78716c; margin-top: 8px; line-height: 1.4; }
+    .hover-card .hover-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .hover-card .hover-tag { font-size: 0.7rem; padding: 3px 8px; border-radius: 12px; }
+    .hover-card .hover-score { color: #ffc107; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-background">
+  <!-- Navbar -->
+  <div id="navbar" style="flex:none;"></div>
+
+  <div class="flex-1 flex flex-col md:flex-row">
+    <!-- Sidebar -->
+    <aside class="w-full md:w-12 lg:w-14 bg-muted border-r border-border p-0.5 space-y-0.5 overflow-y-auto mt-16">
+      <button onclick="openMyRecommendations()" class="flex items-center gap-2 text-sm px-2 py-2 rounded-lg shadow w-full justify-between mt-2" style="background: #264653; color: white; border: 1px solid #264653;">
+        <span class="flex items-center gap-1 text-xs">Mes ajouts</span>
+      </button>
+      <button onclick="toggleFilters()" class="flex items-center gap-2 text-sm px-2 py-2 rounded-lg shadow w-full justify-between mt-2" style="background: #fef3e2; color: #f4a261; border: 1px solid #f4a261;">
+        <span class="flex items-center gap-1 text-xs">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+          Trier par
+        </span>
+        <span id="filter-arrow-top" class="text-xs">▼</span>
+      </button>
+      <div id="filter-options" class="hidden mt-1 p-0.5 bg-white rounded shadow">
+        <button onclick="setFilterMode('categorie')" class="w-full text-left px-1 py-0.5 rounded text-xs hover:bg-gray-200">Catégorie</button>
+        <button onclick="setFilterMode('gouvernorat')" class="w-full text-left px-1 py-0.5 rounded text-xs hover:bg-gray-200">Ville</button>
+        <button onclick="setFilterMode('evenement')" class="w-full text-left px-1 py-0.5 rounded text-xs hover:bg-gray-200">Événement</button>
+        <button onclick="setFilterMode('saison')" class="w-full text-left px-1 py-0.5 rounded text-xs hover:bg-gray-200">Saison</button>
+        <button onclick="setFilterMode('attraction')" class="w-full text-left px-1 py-0.5 rounded text-xs hover:bg-gray-200">Attraction</button>
+      </div>
+      <!-- Category filter -->
+      <div id="filter-categorie" class="hidden border-t border-gray-300 pt-3">
+        <h4 class="text-sm font-bold mb-2">Catégories</h4>
+        <div class="space-y-1">
+          <button onclick="selectCategory('Hôtel')" class="w-full text-left px-1 py-0.5 rounded text-sm hover:bg-muted">Hôtel</button>
+          <button onclick="selectCategory('Maison')" class="w-full text-left px-1 py-0.5 rounded text-sm hover:bg-muted">Maison</button>
+          <button onclick="selectCategory('Maison d\'hôtes')" class="w-full text-left px-1 py-0.5 rounded text-sm hover:bg-muted">Maison d'hôtes</button>
+          <button onclick="selectCategory('Ferme')" class="w-full text-left px-1 py-0.5 rounded text-sm hover:bg-muted">Ferme</button>
+        </div>
+      </div>
+
+      <!-- Ville filter -->
+      <div id="filter-gouvernorat" class="hidden border-t border-gray-300 pt-3">
+        <h4 class="text-sm font-bold mb-2">Villes</h4>
+        <div class="space-y-1" id="villes-list">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Season filter -->
+      <div id="filter-saison" class="hidden border-t border-gray-300 pt-3">
+        <h4 class="text-sm font-bold mb-2">Saisons</h4>
+        <div class="space-y-1">
+          <button onclick="selectSaison('Haute saison')" class="w-full text-left px-1 py-0.5 rounded text-sm hover:bg-muted">Haute saison</button>
+          <button onclick="selectSaison('Basse saison')" class="w-full text-left px-1 py-0.5 rounded text-sm hover:bg-muted">Basse saison</button>
+        </div>
+      </div>
+
+      <!-- Événements filter -->
+      <div id="filter-evenement" class="hidden border-t border-gray-300 pt-3">
+        <h4 class="text-sm font-bold mb-2">Événements</h4>
+        <div class="space-y-1" id="evenements-list">
+        </div>
+        <div id="event-calendar-section" class="hidden mt-3">
+          <h5 class="text-xs font-semibold mb-2">Sélectionner une date:</h5>
+          <div id="event-calendar-nav" class="flex items-center justify-between mb-2">
+            <button onclick="changeEventMonth(-1)" class="p-1 hover:bg-gray-100 rounded text-xs">&lt;</button>
+            <span id="event-month-year" class="text-xs font-medium"></span>
+            <button onclick="changeEventMonth(1)" class="p-1 hover:bg-gray-100 rounded text-xs">&gt;</button>
+          </div>
+          <div id="event-calendar-grid" class="grid grid-cols-7 gap-1 text-xs"></div>
+        </div>
+      </div>
+
+      <!-- Attractions filter -->
+      <div id="filter-attraction" class="hidden border-t border-gray-300 pt-3">
+        <h4 class="text-sm font-bold mb-2">Attractions</h4>
+        <div class="space-y-1" id="attractions-list">
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-3 overflow-x-auto">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+        <h2 class="section-title" id="page-title">Tous les logements</h2>
+        <div class="relative">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          <input type="text" id="search-input" placeholder="Rechercher" class="input-field pl-9 !py-2 text-sm w-64" oninput="handleSearch(this.value)">
+        </div>
+      </div>
+
+      <div class="relative pt-4 pb-4">
+        <button onclick="scrollTable('left')" class="absolute left-0 top-1/2 -translate-y-1/2 z-20 bg-primary text-white p-2 rounded-full shadow-lg hover:bg-primary/90" style="margin-left: -16px;">←</button>
+        <button onclick="scrollTable('right')" class="absolute right-0 top-1/2 -translate-y-1/2 z-20 bg-primary text-white p-2 rounded-full shadow-lg hover:bg-primary/90" style="margin-right: -16px;">→</button>
+        <div class="overflow-auto rounded-lg border border-border scrollbar-hide" id="table-scroll-container" style="max-height: 600px;">
+            <table class="hotel-table w-full" style="min-width: 100%;">
+              <thead class="sticky top-0 z-10 bg-gray-100">
+                <tr>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-black border-b border-gray-300">Nom</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-black border-b border-gray-300">Ville</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-black border-b border-gray-300">🏨</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-black border-b border-gray-300">📍</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-black border-b border-gray-300">Calendrier</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-black border-b border-gray-300">Saison</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-black border-b border-gray-300">Attractions</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-black border-b border-gray-300">Nb. Avis</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-black border-b border-gray-300 cursor-pointer" onclick="toggleSort('SCORE')">⭐</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-black border-b border-gray-300">Avis clients</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-black border-b border-gray-300">Avis personnel</th>
+                  <th class="px-4 py-3 text-left text-sm font-semibold text-black border-b border-gray-300">Recommander</th>
+                </tr>
+              </thead>
+              <tbody id="hotels-table-body">
+                <!-- Populated by JS -->
+              </tbody>
+            </table>
+        </div>
+      </div>
+      <div style="height: 80px;"></div>
+    </main>
+  </div>
+
+  <!-- Detail Popup -->
+  <div id="detail-popup" class="hidden popup-overlay" onclick="closePopup('detail-popup')">
+    <div class="popup-content" onclick="event.stopPropagation()">
+      <button onclick="closePopup('detail-popup')" class="absolute top-4 right-4 text-muted-foreground hover:text-foreground">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+      <h3 id="popup-title" class="text-xl font-semibold mb-3 pr-8"></h3>
+      <p id="popup-description" class="text-sm text-muted-foreground mb-4"></p>
+      <div id="popup-extra" class="space-y-2 text-sm"></div>
+    </div>
+  </div>
+
+  <!-- Dates Popup -->
+  <div id="dates-popup" class="hidden popup-overlay" onclick="closePopup('dates-popup')">
+    <div class="popup-content max-w-md" onclick="event.stopPropagation()">
+      <button onclick="closePopup('dates-popup')" class="absolute top-4 right-4 text-muted-foreground hover:text-foreground">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+      <h3 id="dates-title" class="text-xl font-semibold mb-3"></h3>
+      <div id="calendar-container" class="calendar-nav">
+        <button onclick="changeMonth(-1)" class="p-2 hover:bg-gray-100 rounded">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <span id="calendar-month-year" class="font-semibold text-lg"></span>
+        <button onclick="changeMonth(1)" class="p-2 hover:bg-gray-100 rounded">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </div>
+      <div id="calendar-grid" class="calendar-grid"></div>
+      <div class="mt-3 flex items-center gap-4 text-sm">
+        <div class="flex items-center gap-1"><span class="w-4 h-4 rounded" style="background:#f4a261"></span><span>Disponible</span></div>
+        <div class="flex items-center gap-1"><span class="w-4 h-4 rounded" style="background:#d1d5db"></span><span>Indisponible</span></div>
+        <div class="flex items-center gap-1"><span class="w-4 h-4 rounded" style="background:#e76f51"></span><span>Événement</span></div>
+      </div>
+      <div id="event-info" class="mt-3 hidden p-2 bg-orange-50 rounded text-sm"></div>
+    </div>
+  </div>
+
+  <!-- Lodging Detail Popup -->
+  <div id="lodging-popup" class="hidden popup-overlay" onclick="closePopup('lodging-popup')">
+    <div class="popup-content max-w-2xl" onclick="event.stopPropagation()">
+      <button onclick="closePopup('lodging-popup')" class="absolute top-4 right-4 text-muted-foreground hover:text-foreground z-10 bg-white/80 rounded-full p-1">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+      <div id="lodging-content"></div>
+    </div>
+  </div>
+
+  <!-- Recommendation Popup -->
+  <div id="recommend-popup" class="hidden popup-overlay" onclick="closePopup('recommend-popup')">
+    <div class="popup-content max-w-lg" onclick="event.stopPropagation()">
+      <button onclick="closePopup('recommend-popup')" class="absolute top-4 right-4 text-muted-foreground hover:text-foreground">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+      <h3 class="text-xl font-semibold mb-3 pr-8" id="recommend-title">Recommander <span id="rec-type-title"></span></h3>
+      <p class="text-sm text-muted-foreground mb-4">Partagez vos recommandations</p>
+      
+      <!-- Attraction Fields -->
+      <div id="attraction-fields" class="space-y-3">
+        <div>
+          <label class="text-sm font-medium block mb-1">Nom de l'attraction:</label>
+          <input type="text" id="rec-nom-attraction" class="input-field" placeholder="Nom de l'attraction">
+        </div>
+        <div>
+          <label class="text-sm font-medium block mb-1">Description:</label>
+          <textarea id="rec-desc-attraction" class="input-field min-h-[60px]" placeholder="Description de l'attraction"></textarea>
+        </div>
+        <div>
+          <label class="text-sm font-medium block mb-1">Type d'attraction:</label>
+          <input type="text" id="rec-type-attraction" class="input-field" placeholder="Musée, Parc, Plage, etc.">
+        </div>
+        <div>
+          <label class="text-sm font-medium block mb-1">Localisation:</label>
+          <input type="text" id="rec-localisation" class="input-field" placeholder="Adresse ou coordonnées">
+        </div>
+        <div>
+          <label class="text-sm font-medium block mb-1">Ville:</label>
+          <input type="text" id="rec-ville-attraction" class="input-field" placeholder="Ville de l'attraction">
+        </div>
+        <div>
+          <label class="text-sm font-medium block mb-1">Photo:</label>
+          <input type="file" id="rec-image-attraction" class="input-field" accept="image/*">
+          <p class="text-xs text-gray-500 mt-1">Sélectionnez une image à uploader</p>
+        </div>
+      </div>
+      
+      <!-- Event Fields -->
+      <div id="event-fields" class="space-y-3 hidden">
+        <div>
+          <label class="text-sm font-medium block mb-1">Nom de l'événement:</label>
+          <input type="text" id="rec-nom-evenement" class="input-field" placeholder="Nom de l'événement">
+        </div>
+        <div>
+          <label class="text-sm font-medium block mb-1">Type d'événement:</label>
+          <input type="text" id="rec-type-evenement" class="input-field" placeholder="Concert, Festival, Sport, etc.">
+        </div>
+        <div>
+          <label class="text-sm font-medium block mb-1">Description:</label>
+          <textarea id="rec-desc-evenement" class="input-field min-h-[60px]" placeholder="Description de l'événement"></textarea>
+        </div>
+        <div>
+          <label class="text-sm font-medium block mb-1">Lieu:</label>
+          <input type="text" id="rec-lieu-evenement" class="input-field" placeholder="Lieu de l'événement">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-sm font-medium block mb-1">Prix min billet:</label>
+            <input type="number" id="rec-prix-min" class="input-field" placeholder="Prix minimum">
+          </div>
+          <div>
+            <label class="text-sm font-medium block mb-1">Prix max billet:</label>
+            <input type="number" id="rec-prix-max" class="input-field" placeholder="Prix maximum">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-sm font-medium block mb-1">Date début:</label>
+            <input type="date" id="rec-date-debut" class="input-field">
+          </div>
+          <div>
+            <label class="text-sm font-medium block mb-1">Date fin:</label>
+            <input type="date" id="rec-date-fin" class="input-field">
+          </div>
+        </div>
+        <div>
+          <label class="text-sm font-medium block mb-1">Ville:</label>
+          <input type="text" id="rec-ville-evenement" class="input-field" placeholder="Ville de l'événement">
+        </div>
+      </div>
+      
+      <button onclick="saveRecommendation()" class="w-full btn-primary mt-4">Enregistrer la recommandation</button>
+    </div>
+  </div>
+
+  <!-- My Recommendations Popup -->
+  <div id="my-recommendations-popup" class="hidden popup-overlay" onclick="closePopup('my-recommendations-popup')">
+    <div class="popup-content max-w-2xl" onclick="event.stopPropagation()">
+      <button onclick="closePopup('my-recommendations-popup')" class="absolute top-4 right-4 text-muted-foreground hover:text-foreground">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+      <h3 class="text-xl font-semibold mb-3">Mes attractions et événements ajoutés</h3>
+      
+      <div id="my-attractions-section" class="mb-4">
+        <h4 class="font-semibold text-lg mb-2 text-orange-700">Attractions</h4>
+        <div id="my-attractions-list" class="space-y-2 max-h-40 overflow-y-auto"></div>
+      </div>
+      
+      <div id="my-events-section">
+        <h4 class="font-semibold text-lg mb-2 text-purple-700">Événements</h4>
+        <div id="my-events-list" class="space-y-2 max-h-40 overflow-y-auto"></div>
+      </div>
+      
+      <div id="no-recommendations" class="text-center text-muted-foreground py-4 hidden">
+        Vous n'avez pas encore ajouté d'attractions ou d'événements.
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div id="footer" style="flex:none;width:100%;margin:0;"></div>
+
+  <div id="hover-card" class="hover-card">
+    <img id="hover-img" src="" alt="">
+    <div class="hover-content">
+      <div id="hover-title" class="hover-title"></div>
+      <div id="hover-details"></div>
+    </div>
+  </div>
+
+  <script>
+    // Data
+    let hotels = [];
+    let filteredHotels = [];
+    let currentFilter = null;
+let selectedCategory = null;
+    let selectedVille = null;
+    let selectedSaison = null;
+    let selectedAttraction = null;
+    let searchTerm = "";
+    let sortBy = 'ID_LOGEMENT';
+    let sortOrder = 'ASC';
+    let currentRecommendHotel = null;
+
+    const villes = ["Tunis", "Ariana", "Ben Arous", "Manouba", "Nabeul", "Bizerte", "Béja", "Jendouba", "Le Kef", "Siliana", "Kasserine", "Sidi Bouzid", "Kairouan", "Sousse", "Monastir", "Mahdia", "Sfax", "Gabès", "Médenine", "Tataouine", "Kébili", "Gafsa", "Tozeur", "Zaghouan"];
+
+    const categories = ["Hôtel", "Maison", "Maison d'hôtes", "Ferme"];
+    const saisons = ["Haute saison", "Basse saison"];
+
+    const detailsEvenements = {
+      "Festival de Carthage": { description: "Le Festival International de Carthage est le plus grand festival culturel de Tunisie.", lieu: "Amphithéâtre de Carthage, Tunis", date: "Juillet - Août 2026", prix: "30 - 120 TND" },
+      "Festival de Hammamet": { description: "Festival international de musique et théâtre à Hammamet.", lieu: "Centre Culturel International, Hammamet", date: "Juillet - Août 2026", prix: "25 - 80 TND" },
+    };
+
+    const detailsAttractions = {
+      "Stade Olympique de Radès": { description: "Le plus grand stade de Tunisie avec 60 000 places.", adresse: "Radès, Ben Arous", horaires: "Selon les événements" },
+      "Musée du Bardo": { description: "La plus grande collection de mosaïques romaines au monde.", adresse: "Le Bardo, Tunis", horaires: "Mar-Dim, 9h-17h", prix: "13 TND" },
+      "Parc du Belvédère": { description: "Le plus grand parc urbain de Tunis.", adresse: "Belvédère, Tunis", horaires: "6h - 20h", prix: "5 TND" },
+    };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchHotels().then(() => {
+        populateVilles();
+        populateEvenements();
+        populateAttractions();
+      });
+    });
+
+    function populateVilles() {
+      const container = document.getElementById('villes-list');
+      container.innerHTML = '';
+      villes.forEach(ville => {
+        const btn = document.createElement('button');
+        btn.className = 'w-full text-left px-2 py-1 rounded text-sm hover:bg-muted';
+        btn.textContent = ville;
+        btn.onclick = () => selectVille(ville);
+        container.appendChild(btn);
+      });
+    }
+
+    function populateEvenements() {
+      const container = document.getElementById('evenements-list');
+      const evenementsSet = new Set();
+      hotels.forEach(h => {
+        (h.evenements || []).forEach(e => evenementsSet.add(e.nom));
+      });
+      evenementsSet.forEach(e => {
+        const btn = document.createElement('button');
+        btn.className = 'w-full text-left px-2 py-1 rounded text-sm hover:bg-muted';
+        btn.textContent = e;
+        btn.onclick = (event) => selectEvenement(e, event);
+        container.appendChild(btn);
+      });
+    }
+
+    function populateAttractions() {
+      const container = document.getElementById('attractions-list');
+      const attractionsSet = new Set();
+      hotels.forEach(h => {
+        (h.attractions || []).forEach(a => attractionsSet.add(a.nom));
+      });
+      attractionsSet.forEach(a => {
+        const btn = document.createElement('button');
+        btn.className = 'w-full text-left px-2 py-1 rounded text-sm hover:bg-muted';
+        btn.textContent = a;
+        btn.onclick = () => selectAttraction(a);
+        container.appendChild(btn);
+      });
+    }
+
+    function selectEvenement(evenement, event) {
+      selectedEvenement = selectedEvenement === evenement ? null : evenement;
+      selectedEventDate = null;
+      
+      const calendarSection = document.getElementById('event-calendar-section');
+      if (selectedEvenement) {
+        calendarSection.classList.remove('hidden');
+        window.eventMonth = new Date().getMonth();
+        window.eventYear = new Date().getFullYear();
+        renderEventCalendar();
+        
+        const rect = event.target.getBoundingClientRect();
+        calendarSection.style.position = 'fixed';
+        calendarSection.style.top = rect.top + 'px';
+        calendarSection.style.left = (rect.right + 10) + 'px';
+        calendarSection.style.zIndex = '100';
+        calendarSection.style.background = 'white';
+        calendarSection.style.border = '1px solid #e7e5e4';
+        calendarSection.style.padding = '10px';
+        calendarSection.style.borderRadius = '8px';
+        calendarSection.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+      } else {
+        calendarSection.classList.add('hidden');
+      }
+      
+      applyFilters();
+    }
+
+    function changeEventMonth(delta) {
+      const today = new Date();
+      const currentMonth = today.getMonth();
+      const currentYear = today.getFullYear();
+      
+      let newMonth = window.eventMonth + delta;
+      let newYear = window.eventYear;
+      
+      if (newMonth > 11) {
+        newMonth = 0;
+        newYear++;
+      } else if (newMonth < 0) {
+        newMonth = 11;
+        newYear--;
+      }
+      
+      if (newYear < currentYear || (newYear === currentYear && newMonth < currentMonth)) {
+        return;
+      }
+      
+      window.eventMonth = newMonth;
+      window.eventYear = newYear;
+      renderEventCalendar();
+    }
+
+    function renderEventCalendar() {
+      const grid = document.getElementById('event-calendar-grid');
+      const monthYear = document.getElementById('event-month-year');
+      const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+      
+      monthYear.textContent = months[window.eventMonth] + ' ' + window.eventYear;
+      
+      const firstDay = new Date(window.eventYear, window.eventMonth, 1).getDay();
+      const daysInMonth = new Date(window.eventYear, window.eventMonth + 1, 0).getDate();
+      
+      let html = '';
+      const days = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
+      days.forEach(d => html += `<div class="text-center text-gray-400 py-1">${d}</div>`);
+      
+      for (let i = 0; i < firstDay; i++) {
+        html += '<div></div>';
+      }
+      
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${window.eventYear}-${window.eventMonth + 1}-${day}`;
+        const isSelected = selectedEventDate === dateStr;
+        html += `<div onclick="selectEventDate('${dateStr}')" class="text-center py-1 cursor-pointer rounded ${isSelected ? 'bg-primary text-white' : 'hover:bg-gray-100'}">${day}</div>`;
+      }
+      
+      grid.innerHTML = html;
+    }
+
+    function selectEventDate(dateStr) {
+      selectedEventDate = selectedEventDate === dateStr ? null : dateStr;
+      renderEventCalendar();
+      applyFilters();
+    }
+
+    let selectedEventDate = null;
+
+    function selectAttraction(attraction) {
+      selectedAttraction = selectedAttraction === attraction ? null : attraction;
+      updatePageTitle();
+      fetchHotels();
+    }
+
+    let selectedEvenement = null;
+
+    function selectEvenement(evenement, event) {
+      selectedEvenement = selectedEvenement === evenement ? null : evenement;
+      selectedEventDate = null;
+      updatePageTitle();
+      
+      const calendarSection = document.getElementById('event-calendar-section');
+      if (selectedEvenement) {
+        calendarSection.classList.remove('hidden');
+        window.eventMonth = new Date().getMonth();
+        window.eventYear = new Date().getFullYear();
+        renderEventCalendar();
+      }
+      fetchHotels();
+    }
+
+    async function fetchHotels() {
+      try {
+        const params = new URLSearchParams();
+        if (selectedCategory) params.append('categorie', selectedCategory);
+        if (selectedVille) params.append('ville', selectedVille);
+        if (selectedSaison) params.append('saison', selectedSaison);
+        if (selectedEvenement) params.append('evenement', selectedEvenement);
+        if (searchTerm) params.append('search', searchTerm);
+        if (sortBy) params.append('sortBy', sortBy);
+        if (sortOrder) params.append('sortOrder', sortOrder);
+        if (selectedAttraction) params.append('attraction', selectedAttraction);
+        
+        const url = 'api/logements.php' + (params.toString() ? '?' + params.toString() : '');
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Network error');
+        const data = await res.json();
+        if (!data.success) {
+          console.error('API error:', data.error);
+          hotels = [];
+          filteredHotels = [];
+          renderTable();
+          return;
+        }
+        if (data.success && data.logements) {
+          hotels = data.logements.map(l => ({
+            id: l.id_logement,
+            nom: l.nom,
+            ville: l.ville,
+            lat: parseFloat(l.lat),
+            lng: parseFloat(l.lng),
+            description: l.description,
+            motivation: l.motivation,
+            categorie: l.categorie,
+            saison: l.saison,
+            images: Array.isArray(l.images) ? l.images : [],
+            datesDisponibles: Array.isArray(l.dates_disponibles) ? l.dates_disponibles : [],
+            datesEvenements: (l.dates_evenements && Array.isArray(l.dates_evenements)) ? l.dates_evenements : [],
+            score: l.score || 0,
+            nb_avis: l.nb_avis || 0,
+            evenements: l.evenements || [],
+            attractions: l.attractions || [],
+          }));
+        }
+      } catch (err) {
+        console.error('Error fetching hotels:', err);
+      }
+      filteredHotels = [...hotels];
+      renderTable();
+    }
+
+    
+
+    function renderTable() {
+      const tbody = document.getElementById('hotels-table-body');
+      tbody.innerHTML = '';
+
+      if (filteredHotels.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted-foreground py-8">Aucun logement trouvé</td></tr>';
+        return;
+      }
+
+      filteredHotels.forEach(hotel => {
+        const datesJson = encodeURIComponent(JSON.stringify(hotel.datesDisponibles || []));
+        const datesEventsJson = encodeURIComponent(JSON.stringify(hotel.datesEvenements || []));
+        const eventsJson = encodeURIComponent(JSON.stringify(hotel.evenements || []));
+        
+        let attractionsHtml = '';
+        (hotel.attractions || []).forEach(function(a) {
+          attractionsHtml += '<span class="whitespace-nowrap flex items-center gap-1 hover:text-primary cursor-pointer" data-nom="' + a.nom + '" data-dist="' + (a.distance || 0) + '" data-desc="' + (a.description || '').replace(/"/g, '&quot;') + '" data-img="' + (a.image || '') + '"><span class="text-primary">i</span><span class="underline decoration-dotted">' + a.nom + '</span></span>';
+        });
+        
+        let scoreHtml = '';
+        for (let i = 0; i < 5; i++) {
+          scoreHtml += '<span style="color: ' + (i < Math.round(hotel.score || 0) ? '#ffc107' : '#e7e5e4') + '">★</span>';
+        }
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = 
+          '<td><span class="font-semibold whitespace-nowrap hover:underline cursor-pointer" style="color: #292524;" data-id="' + hotel.id + '">' + hotel.nom + '</span></td>' +
+          '<td class="text-muted-foreground">' + hotel.ville + '</td>' +
+          '<td><span class="px-2 py-1 rounded-full text-xs bg-accent whitespace-nowrap">' + hotel.categorie + '</span></td>' +
+          '<td class="text-muted-foreground font-mono text-xs"><a href="https://www.google.com/maps?q=' + hotel.lat + ',' + hotel.lng + '" target="_blank" class="text-primary underline">' + hotel.lat.toFixed(4) + ', ' + hotel.lng.toFixed(4) + '</a></td>' +
+          '<td><button onclick="showDatesPopup(\'' + hotel.nom.replace(/'/g, "\\'") + '\')" class="p-1 rounded hover:bg-accent/20" title="Voir le calendrier"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e8a87c" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></button></td>' +
+          '<td><span class="inline-block px-2 py-1 rounded-full text-xs font-medium bg-accent">' + hotel.saison + '</span></td>' +
+          '<td class="text-xs text-left">' + attractionsHtml + '</td>' +
+          '<td class="text-muted-foreground">' + (hotel.nb_avis || 0) + '</td>' +
+          '<td><div class="flex items-center gap-0.5" title="Score: ' + hotel.score + '">' + scoreHtml + '</div></td>' +
+          '<td><a href="avis.html?logement_id=' + hotel.id + '" class="inline-flex items-center justify-center px-2 py-1 rounded-md text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20">Voir les avis</a></td>' +
+          '<td><a href="avis-personnel.html" class="inline-flex items-center justify-center px-2 py-1 rounded-md text-xs font-medium bg-green-100 text-green-700 hover:bg-green-200">Donner votre avis</a></td>' +
+          '<td style="white-space:nowrap"><button onclick="openRecommendPopup(' + hotel.id + ', \'attraction\')" class="p-1.5 rounded-md bg-orange-100 text-orange-700 hover:bg-orange-200" title="Recommander une attraction"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 12c0-2.21 1.79-4 4-4s4 1.79 4 4"></path><path d="M12 8v8"></path><path d="M8 12h8"></path></svg></button><button onclick="openRecommendPopup(' + hotel.id + ', \'evenement\')" class="p-1.5 rounded-md bg-purple-100 text-purple-700 hover:bg-purple-200" title="Recommander un evenement"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M6.34 5.66l2.83 2.83M2 12h4M17.66 5.66l-2.83 2.83M22 12h-4M17.66 18.34l2.83-2.83M6.34 18.34l2.83-2.83"></path><circle cx="12" cy="12" r="4"></circle></svg></button></td>';
+        
+        tr.querySelectorAll('span[data-id]').forEach(function(el) {
+          el.onmouseenter = function(evt) { showHoverCard(evt, parseInt(el.dataset.id)); };
+          el.onmouseleave = hideHoverCard;
+        });
+        
+        tr.querySelectorAll('span[data-nom]').forEach(function(el) {
+          el.onmouseenter = function(evt) { showAttractionTooltip(evt, el.dataset.nom, parseFloat(el.dataset.dist) || 0, el.dataset.desc || '', el.dataset.img || ''); };
+          el.onmouseleave = hideHoverCard;
+        });
+        
+        tbody.appendChild(tr);
+      });
+    }
+
+    function applyFilters() {
+      fetchHotels();
+    }
+    
+    function toggleSort(column) {
+      if (sortBy === column) {
+        sortOrder = sortOrder === 'ASC' ? 'DESC' : 'ASC';
+      } else {
+        sortBy = column;
+        sortOrder = 'ASC';
+      }
+      fetchHotels();
+    }
+    
+    function handleSearch(value) {
+      searchTerm = value;
+      fetchHotels();
+    }
+    
+    function selectCategory(cat) {
+      selectedCategory = selectedCategory === cat ? null : cat;
+      updatePageTitle();
+      applyFilters();
+    }
+
+    function toggleFilters() {
+      const options = document.getElementById('filter-options');
+      const arrowTop = document.getElementById('filter-arrow-top');
+      options.classList.toggle('hidden');
+      const isHidden = options.classList.contains('hidden');
+      if (arrowTop) arrowTop.textContent = isHidden ? '▼' : '▲';
+    }
+
+    function setFilterMode(mode) {
+      const options = document.getElementById('filter-options');
+      if (options && !options.classList.contains('hidden')) {
+        options.classList.add('hidden');
+      }
+      document.querySelectorAll('[id^="filter-"]').forEach(el => {
+        if (el.id !== 'filter-options') el.classList.add('hidden');
+      });
+      const filterDiv = document.getElementById('filter-' + mode);
+      if (filterDiv) {
+        filterDiv.classList.remove('hidden');
+      }
+      currentFilter = mode;
+    }
+
+    function selectCategory(cat) {
+      selectedCategory = selectedCategory === cat ? null : cat;
+      updatePageTitle();
+      applyFilters();
+    }
+
+    function selectVille(ville) {
+      selectedVille = selectedVille === ville ? null : ville;
+      updatePageTitle();
+      applyFilters();
+    }
+
+    function selectSaison(saison) {
+      selectedSaison = selectedSaison === saison ? null : saison;
+      updatePageTitle();
+      applyFilters();
+    }
+
+    function updatePageTitle() {
+      const title = document.getElementById('page-title');
+      const plural = hotels.length !== 1 ? 's' : '';
+      if (selectedCategory) {
+        let catName = selectedCategory;
+        if (selectedCategory === 'Hôtel') catName = 'Hôtel' + (hotels.length !== 1 ? 's' : '');
+        else if (selectedCategory === 'Maison') catName = 'Maison' + (hotels.length !== 1 ? 's' : '');
+        else if (selectedCategory === 'Maison d\'hôtes') catName = 'Maison d\'hôtes';
+        else if (selectedCategory === 'Ferme') catName = 'Ferme' + (hotels.length !== 1 ? 's' : '');
+        title.textContent = `Liste des ${catName}`;
+      }
+      else if (selectedVille) title.textContent = `Logement${plural} à ${selectedVille}`;
+      else if (selectedSaison) title.textContent = `Logement${plural} ${selectedSaison}`;
+      else if (selectedEvenement) title.textContent = `Logement${plural} pour "${selectedEvenement}"`;
+      else if (selectedAttraction) title.textContent = `Logement${plural} près de "${selectedAttraction}"`;
+      else title.textContent = `Liste des logements`;
+    }
+
+    function showDetail(type, nom) {
+      const popup = document.getElementById('detail-popup');
+      const title = document.getElementById('popup-title');
+      const desc = document.getElementById('popup-description');
+      const extra = document.getElementById('popup-extra');
+
+      if (type === 'evenement') {
+        const detail = detailsEvenements[nom] || { description: "", lieu: "", date: "" };
+        title.textContent = nom;
+        desc.textContent = detail.description;
+        extra.innerHTML = `
+          <div class="flex items-start gap-2"><span class="text-primary">L:</span><span><strong>Lieu:</strong> ${detail.lieu}</span></div>
+          <div class="flex items-start gap-2"><span class="text-primary">D:</span><span><strong>Date:</strong> ${detail.date}</span></div>
+          ${detail.prix ? `<div class="flex items-start gap-2"><span class="text-primary">€:</span><span><strong>Prix:</strong> ${detail.prix}</span></div>` : ''}
+        `;
+      } else {
+        const detail = detailsAttractions[nom] || { description: "", adresse: "" };
+        title.textContent = nom;
+        desc.textContent = detail.description;
+        extra.innerHTML = `
+          <div class="flex items-start gap-2"><span class="text-primary">A:</span><span><strong>Adresse:</strong> ${detail.adresse}</span></div>
+          ${detail.horaires ? `<div class="flex items-start gap-2"><span class="text-primary">H:</span><span><strong>Horaires:</strong> ${detail.horaires}</span></div>` : ''}
+          ${detail.prix ? `<div class="flex items-start gap-2"><span class="text-primary">€:</span><span><strong>Prix:</strong> ${detail.prix}</span></div>` : ''}
+        `;
+      }
+      popup.classList.remove('hidden');
+    }
+
+    function showDatesPopup(nom) {
+      const hotel = hotels.find(function(h) { return h.nom === nom; });
+      if (!hotel) return;
+      
+      const popup = document.getElementById('dates-popup');
+      const title = document.getElementById('dates-title');
+      const eventInfo = document.getElementById('event-info');
+      
+      title.textContent = 'Dates disponibles - ' + nom;
+      
+      window.currentDates = hotel.datesDisponibles || [];
+      window.currentEvents = hotel.evenements || [];
+      
+      window.currentEventDates = [];
+      (hotel.evenements || []).forEach(function(ev) {
+        if (ev.date_debut && ev.date_fin) {
+          var start = new Date(ev.date_debut);
+          var end = new Date(ev.date_fin);
+          for (var d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+            window.currentEventDates.push({
+              year: d.getFullYear(),
+              month: d.getMonth() + 1,
+              day: d.getDate()
+            });
+          }
+        }
+      });
+      
+      
+      
+      window.currentMonth = new Date().getMonth();
+      window.currentYear = new Date().getFullYear();
+      if (eventInfo) eventInfo.classList.add('hidden');
+      renderCalendar();
+      
+      popup.classList.remove('hidden');
+    }
+
+    function changeMonth(delta) {
+      const today = new Date();
+      const currentMonth = today.getMonth();
+      const currentYear = today.getFullYear();
+      
+      let newMonth = window.currentMonth + delta;
+      let newYear = window.currentYear;
+      
+      if (newMonth > 11) {
+        newMonth = 0;
+        newYear++;
+      } else if (newMonth < 0) {
+        newMonth = 11;
+        newYear--;
+      }
+      
+      if (newYear < currentYear || (newYear === currentYear && newMonth < currentMonth)) {
+        return;
+      }
+      
+      window.currentMonth = newMonth;
+      window.currentYear = newYear;
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      const grid = document.getElementById('calendar-grid');
+      const monthYear = document.getElementById('calendar-month-year');
+      const months = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+      
+      monthYear.textContent = months[window.currentMonth] + ' ' + window.currentYear;
+      
+      const firstDay = new Date(window.currentYear, window.currentMonth, 1).getDay();
+      const daysInMonth = new Date(window.currentYear, window.currentMonth + 1, 0).getDate();
+      const today = new Date();
+      
+      let html = '';
+      var days = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+      days.forEach(function(d) { html += '<div class="calendar-day header">' + d + '</div>'; });
+      
+      const availableDates = (window.currentDates || []).map(d => {
+        if (d && d.year && d.month !== undefined && d.day) {
+          return `${d.year}-${d.month}-${d.day}`;
+        }
+        return null;
+      }).filter(Boolean);
+      
+      const eventDatesMap = {};
+      (window.currentEventDates || []).forEach((d, idx) => {
+        if (d && d.year && d.month !== undefined && d.day) {
+          const key = `${d.year}-${d.month}-${d.day}`;
+          const eventsWithDates = window.currentEvents.filter(function(ev) { 
+            return ev && ev.date_debut && ev.date_fin; 
+          });
+          const event = eventsWithDates[idx % eventsWithDates.length];
+          if (event) {
+            eventDatesMap[key] = event;
+          }
+        }
+      });
+      
+      for (let i = 0; i < firstDay; i++) {
+        html += `<div class="calendar-day other-month"></div>`;
+      }
+      
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${window.currentYear}-${window.currentMonth + 1}-${day}`;
+        const isAvailable = availableDates.includes(dateStr);
+        const event = eventDatesMap[dateStr];
+        const isToday = today.getDate() === day && today.getMonth() === window.currentMonth && today.getFullYear() === window.currentYear;
+        const classes = ['calendar-day'];
+        
+        if (event) {
+          classes.push('event');
+          var eventData = encodeURIComponent(JSON.stringify(event));
+          html += '<div class="' + classes.join(' ') + '" onclick="showEventInfoFromData(this)" data-event="' + eventData + '">' + day + '</div>';
+        } else if (isAvailable) {
+          classes.push('available');
+          html += `<div class="${classes.join(' ')}">${day}</div>`;
+        } else {
+          classes.push('unavailable');
+          html += `<div class="${classes.join(' ')}">${day}</div>`;
+        }
+        if (isToday && !event) classes.push('today');
+      }
+      
+      grid.innerHTML = html;
+    }
+
+    function showEventInfoFromData(el) {
+      var eventData = JSON.parse(decodeURIComponent(el.getAttribute('data-event')));
+      showEventInfo(eventData.nom, eventData.description || '', eventData.lieu || '', (eventData.prix_min || '') + ' - ' + (eventData.prix_max || ''));
+    }
+
+    function showEventInfo(nom, description, lieu, prix) {
+      var eventInfo = document.getElementById('event-info');
+      if (!eventInfo) return;
+      eventInfo.classList.remove('hidden');
+      eventInfo.innerHTML = 
+        '<div class="font-semibold text-orange-700 mb-1">' + nom + '</div>' +
+        (description ? '<div class="text-gray-600">' + description + '</div>' : '') +
+        (lieu ? '<div class="text-sm text-gray-500">Lieu: ' + lieu + '</div>' : '') +
+        (prix ? '<div class="text-sm font-medium">Prix: ' + prix + '</div>' : '');
+    }
+
+    function showLodgingDetail(id) {
+      const hotel = hotels.find(h => h.id === id);
+      if (!hotel) return;
+
+      const popup = document.getElementById('lodging-popup');
+      const content = document.getElementById('lodging-content');
+
+      const defaultImg = "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=600&fit=crop";
+      const images = hotel.images && hotel.images.length > 0 ? hotel.images : [defaultImg];
+
+      content.innerHTML = `
+        <div class="p-6 pb-2">
+          <div class="flex items-center gap-2">
+            <h3 class="text-xl font-bold">${hotel.nom}</h3>
+            <span class="px-2 py-1 rounded-full text-xs bg-accent">${hotel.categorie}</span>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-1 p-1">
+          ${images.map((img, idx) => `<img src="${img}" alt="${hotel.nom} ${idx + 1}" class="w-full h-32 object-cover rounded-lg">`).join('')}
+        </div>
+        <div class="p-6 space-y-6">
+          <div>
+            <h4 class="font-semibold mb-2">Description</h4>
+            <p class="text-sm text-muted-foreground">${hotel.description}</p>
+          </div>
+          <div>
+            <h4 class="font-semibold mb-2">Pourquoi choisir ce logement</h4>
+            <p class="text-sm text-muted-foreground">${hotel.motivation}</p>
+          </div>
+        </div>
+      `;
+      popup.classList.remove('hidden');
+    }
+
+    function openRecommendPopup(id, type) {
+      currentRecommendHotel = { id: id, type: type };
+      document.getElementById('rec-type-title').textContent = type === 'attraction' ? 'une attraction' : 'un evenement';
+      
+      var attractionFields = document.getElementById('attraction-fields');
+      var eventFields = document.getElementById('event-fields');
+      
+      if (type === 'attraction') {
+        attractionFields.classList.remove('hidden');
+        eventFields.classList.add('hidden');
+      } else {
+        attractionFields.classList.add('hidden');
+        eventFields.classList.remove('hidden');
+      }
+      
+      document.getElementById('recommend-popup').classList.remove('hidden');
+    }
+
+    async function saveRecommendation() {
+      var type = currentRecommendHotel ? currentRecommendHotel.type : null;
+      var hotelId = currentRecommendHotel ? currentRecommendHotel.id : null;
+      var hotel = hotels.find(function(h) { return h.id === hotelId; });
+      var hotelVille = hotel ? hotel.ville : '';
+      
+      if (type === 'attraction') {
+        var nom = document.getElementById('rec-nom-attraction').value;
+        var desc = document.getElementById('rec-desc-attraction').value;
+        var typeAttr = document.getElementById('rec-type-attraction').value;
+        var loc = document.getElementById('rec-localisation').value;
+        var ville = document.getElementById('rec-ville-attraction').value;
+        
+        if (!nom) { alert('Veuillez entrer le nom de l attraction'); return; }
+        
+        var userStr = localStorage.getItem('user');
+        var userId = null;
+        if (userStr) { 
+          try { 
+            var userObj = JSON.parse(userStr);
+            userId = userObj.id || null;
+          } catch(e) {} 
+        }
+        
+        var imageInput = document.getElementById('rec-image-attraction');
+        var imagePath = '';
+        
+        // Handle file upload
+        if (imageInput.files && imageInput.files[0]) {
+          var formData = new FormData();
+          formData.append('image', imageInput.files[0]);
+          
+          try {
+            var uploadResponse = await fetch('api/upload-image.php', {
+              method: 'POST',
+              body: formData
+            });
+            var uploadResult = await uploadResponse.json();
+            if (uploadResult.success) {
+              imagePath = uploadResult.path;
+            } else {
+              console.log('Upload result:', uploadResult);
+            }
+          } catch(e) {
+            console.log('Upload error:', e);
+          }
+        }
+        
+        var data = {
+          type: 'attraction',
+          nom: nom,
+          description: desc,
+          type_attraction: typeAttr,
+          localisation: loc || hotelVille,
+          ville: ville || hotelVille,
+          id_logement: hotelId,
+          user_id: userId,
+          image: imagePath
+        };
+        
+        console.log('Adding attraction, user_id:', userId);
+        
+        fetch('api/recommendations.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(result) {
+          if (result.success) {
+            if (result.exists) {
+              alert('Cette attraction existe déjà dans la base de données.');
+            } else {
+              alert('Merci ! L attraction a été ajoutée et sera affichée pour les logements à ' + (ville || hotelVille));
+              fetchHotels();
+            }
+          } else {
+            alert('Erreur: ' + result.error);
+          }
+        })
+        .catch(function(err) {
+          console.error(err);
+          alert('Erreur lors de l enregistrement');
+        });
+        
+      } else if (type === 'evenement') {
+        var nom = document.getElementById('rec-nom-evenement').value;
+        var typeEv = document.getElementById('rec-type-evenement').value;
+        var desc = document.getElementById('rec-desc-evenement').value;
+        var lieu = document.getElementById('rec-lieu-evenement').value;
+        var prixMin = document.getElementById('rec-prix-min').value;
+        var prixMax = document.getElementById('rec-prix-max').value;
+        var dateDebut = document.getElementById('rec-date-debut').value;
+        var dateFin = document.getElementById('rec-date-fin').value;
+        var ville = document.getElementById('rec-ville-evenement').value;
+        
+        if (!nom) { alert('Veuillez entrer le nom de l evenement'); return; }
+        
+        var data = {
+          type: 'evenement',
+          nom: nom,
+          type_evenement: typeEv,
+          description: desc,
+          lieu: lieu,
+          prix_min: prixMin,
+          prix_max: prixMax,
+          date_debut: dateDebut,
+          date_fin: dateFin,
+          ville: ville || hotelVille,
+          id_logement: hotelId,
+          user_id: userId
+        };
+        
+        fetch('api/recommendations.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(result) {
+          if (result.success) {
+            if (result.exists) {
+              alert('Ce événement existe déjà dans la base de données.');
+            } else {
+              alert('Merci ! L événement a été ajouté et sera affiché pour les logements à ' + (ville || hotelVille));
+              fetchHotels();
+            }
+          } else {
+            alert('Erreur: ' + result.error);
+          }
+        })
+        .catch(function(err) {
+          console.error(err);
+          alert('Erreur lors de l enregistrement');
+        });
+      }
+      
+      closePopup('recommend-popup');
+      
+      document.getElementById('rec-nom-attraction').value = '';
+      document.getElementById('rec-desc-attraction').value = '';
+      document.getElementById('rec-type-attraction').value = '';
+      document.getElementById('rec-localisation').value = '';
+      document.getElementById('rec-ville-attraction').value = '';
+      document.getElementById('rec-image-attraction').value = '';
+      
+      document.getElementById('rec-nom-evenement').value = '';
+      document.getElementById('rec-type-evenement').value = '';
+      document.getElementById('rec-desc-evenement').value = '';
+      document.getElementById('rec-lieu-evenement').value = '';
+      document.getElementById('rec-prix-min').value = '';
+      document.getElementById('rec-prix-max').value = '';
+      document.getElementById('rec-date-debut').value = '';
+      document.getElementById('rec-date-fin').value = '';
+      document.getElementById('rec-ville-evenement').value = '';
+    }
+
+    function closePopup(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function openMyRecommendations() {
+      var listAttractions = document.getElementById('my-attractions-list');
+      var listEvents = document.getElementById('my-events-list');
+      var noRec = document.getElementById('no-recommendations');
+      var sectionAttractions = document.getElementById('my-attractions-section');
+      var sectionEvents = document.getElementById('my-events-section');
+      
+      listAttractions.innerHTML = '<div class="text-sm text-gray-500">Chargement...</div>';
+      listEvents.innerHTML = '<div class="text-sm text-gray-500">Chargement...</div>';
+      
+      var user = JSON.parse(localStorage.getItem('user') || 'null');
+      var userId = user ? user.id : null;
+      
+      fetch('api/recommendations.php?user_id=' + userId)
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (!data.success) {
+            listAttractions.innerHTML = '<div class="text-sm text-red-500">Erreur: ' + (data.error || '') + '</div>';
+            return;
+          }
+          
+          listAttractions.innerHTML = '';
+          var countAtt = 0;
+          (data.attractions || []).forEach(function(a) {
+            countAtt++;
+            listAttractions.innerHTML += 
+              '<div class="p-2 bg-orange-50 rounded border border-orange-200">' +
+                '<div class="flex justify-between items-start">' +
+                  '<div class="flex-1">' +
+                    '<div class="font-semibold">' + a.nom + '</div>' +
+                    '<div class="text-xs text-gray-500">' + (a.type || '') + ' - ' + (a.ville || '') + '</div>' +
+                  '</div>' +
+                  '<div class="flex gap-1">' +
+                    '<button onclick="editAttraction(\'' + a.id + '\', \'' + encodeURIComponent(a.nom) + '\', \'' + encodeURIComponent(a.description || '') + '\', \'' + encodeURIComponent(a.type || '') + '\', \'' + encodeURIComponent(a.localisation || '') + '\', \'' + encodeURIComponent(a.ville || '') + '\')" class="text-blue-600 hover:text-blue-800 text-xs">Modifier</button>' +
+                    '<button onclick="deleteAttraction(\'' + a.id + '\')" class="text-red-600 hover:text-red-800 text-xs">Supprimer</button>' +
+                  '</div>' +
+                '</div>' +
+              '</div>';
+          });
+          if (countAtt === 0) sectionAttractions.classList.add('hidden');
+          else sectionAttractions.classList.remove('hidden');
+          
+          listEvents.innerHTML = '';
+          var countEv = 0;
+          (data.evenements || []).forEach(function(e) {
+            countEv++;
+            listEvents.innerHTML += 
+              '<div class="p-2 bg-purple-50 rounded border border-purple-200">' +
+                '<div class="flex justify-between items-start">' +
+                  '<div class="flex-1">' +
+                    '<div class="font-semibold">' + e.nom + '</div>' +
+                    '<div class="text-xs text-gray-500">' + (e.type || '') + ' - ' + (e.ville || '') + '</div>' +
+                  '</div>' +
+                  '<div class="flex gap-1">' +
+                    '<button onclick="editEvenement(\'' + e.id + '\', \'' + encodeURIComponent(e.nom) + '\', \'' + encodeURIComponent(e.type || '') + '\', \'' + encodeURIComponent(e.description || '') + '\', \'' + encodeURIComponent(e.lieu || '') + '\', ' + (e.prix_min || 0) + ', ' + (e.prix_max || 0) + ', \'' + (e.date_debut || '') + '\', \'' + (e.date_fin || '') + '\', \'' + (e.ville || '') + '\')" class="text-blue-600 hover:text-blue-800 text-xs">Modifier</button>' +
+                    '<button onclick="deleteEvenement(\'' + e.id + '\')" class="text-red-600 hover:text-red-800 text-xs">Supprimer</button>' +
+                  '</div>' +
+                '</div>' +
+              '</div>';
+          });
+          if (countEv === 0) sectionEvents.classList.add('hidden');
+          else sectionEvents.classList.remove('hidden');
+        })
+        .catch(function(err) {
+          listAttractions.innerHTML = '<div class="text-sm text-red-500">Erreur de chargement</div>';
+          listEvents.innerHTML = '<div class="text-sm text-red-500">Erreur de chargement</div>';
+        });
+      
+      document.getElementById('my-recommendations-popup').classList.remove('hidden');
+    }
+
+    function editAttraction(id, nom, description, type, localisation, ville) {
+      nom = decodeURIComponent(nom);
+      description = decodeURIComponent(description);
+      type = decodeURIComponent(type);
+      localisation = decodeURIComponent(localisation);
+      ville = decodeURIComponent(ville);
+      
+      var newNom = prompt('Nom de l attraction:', nom);
+      if (!newNom) return;
+      
+      var data = {
+        type: 'attraction',
+        id: id,
+        nom: newNom,
+        description: description,
+        type_attraction: type,
+        localisation: localisation,
+        ville: ville
+      };
+      
+      fetch('api/recommendations.php', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(result) {
+        if (result.success) {
+          alert('Attraction mise à jour');
+          openMyRecommendations();
+          fetchHotels();
+        } else {
+          alert('Erreur: ' + result.error);
+        }
+      });
+    }
+
+    function deleteAttraction(id) {
+      if (!confirm('Voulez-vous vraiment supprimer cette attraction?')) return;
+      
+      var user = JSON.parse(localStorage.getItem('user') || 'null');
+      var userId = user ? user.id : null;
+      
+      fetch('api/recommendations.php', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'attraction', id: id, user_id: userId })
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(result) {
+        if (result.success) {
+          alert('Attraction supprimée');
+          openMyRecommendations();
+          fetchHotels();
+        } else {
+          alert('Erreur: ' + result.error);
+        }
+      });
+    }
+
+    function editEvenement(id, nom, type, description, lieu, prixMin, prixMax, dateDebut, dateFin, ville) {
+      nom = decodeURIComponent(nom);
+      type = decodeURIComponent(type);
+      description = decodeURIComponent(description);
+      lieu = decodeURIComponent(lieu);
+      ville = decodeURIComponent(ville);
+      
+      var newNom = prompt('Nom de l evenement:', nom);
+      if (!newNom) return;
+      
+      var data = {
+        type: 'evenement',
+        id: id,
+        nom: newNom,
+        type_evenement: type,
+        description: description,
+        lieu: lieu,
+        prix_min: prixMin,
+        prix_max: prixMax,
+        date_debut: dateDebut,
+        date_fin: dateFin,
+        ville: ville
+      };
+      
+      fetch('api/recommendations.php', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(result) {
+        if (result.success) {
+          alert('Evenement mis a jour');
+          openMyRecommendations();
+          fetchHotels();
+        } else {
+          alert('Erreur: ' + result.error);
+        }
+      });
+    }
+
+    function deleteEvenement(id) {
+      if (!confirm('Voulez-vous vraiment supprimer cet evenement?')) return;
+      
+      var user = JSON.parse(localStorage.getItem('user') || 'null');
+      var userId = user ? user.id : null;
+      
+      fetch('api/recommendations.php', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'evenement', id: id, user_id: userId })
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(result) {
+        if (result.success) {
+          alert('Evenement supprime');
+          openMyRecommendations();
+          fetchHotels();
+        } else {
+          alert('Erreur: ' + result.error);
+        }
+      });
+    }
+
+    function showHoverCard(event, hotelId) {
+      const hotel = hotels.find(h => h.id === hotelId);
+      if (!hotel) return;
+      
+      const card = document.getElementById('hover-card');
+      const img = document.getElementById('hover-img');
+      const title = document.getElementById('hover-title');
+      
+      const defaultImg = "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=600&fit=crop";
+      img.src = hotel.images && hotel.images.length > 0 ? hotel.images[0] : defaultImg;
+      
+      const scoreStars = [...Array(5)].map((_, i) => `<span style="color: ${i < Math.round(hotel.score || 0) ? '#ffc107' : '#e7e5e4'}">★</span>`).join('');
+      
+      let attractionsHtml = (hotel.attractions || []).map(a => `<span class="hover-tag" style="background: #fef3e2; color: #f4a261;">📍 ${a.nom} (${a.distance}km)</span>`).join('');
+      let evenementsHtml = (hotel.evenements || []).map(e => `<span class="hover-tag" style="background: #f3e8ff; color: #9333ea;">🎉 ${e.nom}</span>`).join('');
+      
+      title.innerHTML = `${hotel.nom} <span class="hover-score">${scoreStars}</span>`;
+      
+      document.getElementById('hover-details').innerHTML = `
+        <div class="hover-row">
+          <div><span class="hover-label">🏨 Catégorie:</span> <span class="hover-value">${hotel.categorie || '-'}</span></div>
+          <div><span class="hover-label">📍 Ville:</span> <span class="hover-value">${hotel.ville || '-'}</span></div>
+        </div>
+        <div class="hover-row">
+          <div><span class="hover-label">🌡️ Saison:</span> <span class="hover-value">${hotel.saison || '-'}</span></div>
+          <div><span class="hover-label">⭐ Score:</span> <span class="hover-value">${hotel.score || 0}/50</span></div>
+          <div><span class="hover-label">💬 Avis:</span> <span class="hover-value">${hotel.nb_avis || 0}</span></div>
+        </div>
+        <div class="hover-desc">${hotel.description || 'Pas de description'}</div>
+        <div class="hover-tags">${attractionsHtml}</div>
+        <div class="hover-tags">${evenementsHtml}</div>
+      `;
+      
+      var cardWidth = 400;
+      var cardHeight = 500;
+      card.style.left = 'calc(50% - ' + (cardWidth/2) + 'px)';
+      card.style.top = 'calc(50% - ' + (cardHeight/2) + 'px)';
+      card.style.position = 'fixed';
+      card.classList.add('show');
+    }
+
+    function showAttractionTooltip(event, nom, distance, description, image) {
+      const card = document.getElementById('hover-card');
+      const img = document.getElementById('hover-img');
+      const title = document.getElementById('hover-title');
+      
+      img.src = image || "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=200&fit=crop";
+      title.textContent = nom;
+      
+      document.getElementById('hover-details').innerHTML = `
+        <div class="hover-row">
+          <div><span class="hover-label">📍 Nom:</span> <span class="hover-value">${nom}</span></div>
+        </div>
+        <div class="hover-row">
+          <div><span class="hover-label">🚗 Distance:</span> <span class="hover-value">${distance} km</span></div>
+        </div>
+        <div class="hover-desc">${description || 'Pas de description disponible'}</div>
+      `;
+      
+      card.style.left = 'calc(50% - 200px)';
+      card.style.top = 'calc(50% - 200px)';
+      card.style.position = 'fixed';
+      card.classList.add('show');
+    }
+
+    function hideHoverCard() {
+      const card = document.getElementById('hover-card');
+      card.classList.remove('show');
+    }
+
+    function scrollTable(direction) {
+      const el = document.getElementById('table-scroll-container');
+      if (el) el.scrollLeft += direction === 'right' ? 200 : -200;
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.popup-overlay').forEach(p => p.classList.add('hidden'));
+      }
+    });
+
+  </script>
+</body>
+</html>

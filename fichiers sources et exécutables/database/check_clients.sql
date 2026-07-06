@@ -1,0 +1,1 @@
+SELECT ID_LOCATAIRE, nom_locataire, prenom_locataire FROM LOCATAIRE;

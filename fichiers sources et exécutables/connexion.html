@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StayEase - Connexion</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+  <script src="navbar.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      let showPassword = false;
+      let loading = false;
+
+      window.togglePassword = function() {
+        showPassword = !showPassword;
+        const input = document.getElementById('password-input');
+        const eyeIcon = document.getElementById('eye-icon');
+        const eyeOffIcon = document.getElementById('eye-off-icon');
+        
+        input.type = showPassword ? 'text' : 'password';
+        eyeIcon.classList.toggle('hidden', showPassword);
+        eyeOffIcon.classList.toggle('hidden', !showPassword);
+      }
+
+      document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (loading) return;
+        
+        const email = document.getElementById('email-input').value;
+        const password = document.getElementById('password-input').value;
+        const errorDiv = document.getElementById('error-message');
+        const submitBtn = document.getElementById('submit-btn');
+        
+        errorDiv.classList.add('hidden');
+        loading = true;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Connexion en cours...';
+        
+        try {
+          const response = await fetch('api/login.php', {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            // Store user in localStorage
+            const userData = JSON.stringify(data.user);
+            localStorage.setItem('user', userData);
+            
+            // Force redirect
+            if (data.user.role === 'proprietaire') {
+              window.location.href = 'proprietaire.html';
+            } else {
+              window.location.href = 'index.html';
+            }
+          } else {
+            errorDiv.textContent = data.error || 'Email ou mot de passe incorrect';
+            errorDiv.classList.remove('hidden');
+          }
+        } catch (err) {
+          errorDiv.textContent = 'Erreur de connexion au serveur';
+          errorDiv.classList.remove('hidden');
+        } finally {
+          loading = false;
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Se connecter';
+        }
+        return false;
+      });
+    });
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
+    body { font-family: 'Quicksand', system-ui, sans-serif; background-color: #fdfbf7; color: #292524; }
+    .navbar { background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+    .nav-link { padding: 0.6rem 1.2rem; border-radius: 50px; color: #292524; transition: all 0.3s ease; font-weight: 500; }
+    .nav-link:hover { background-color: #f8f5f2; color: #e67e22; }
+    .lang-menu { position: absolute; right: 0; top: 100%; margin-top: 0.5rem; background: white; border: 1px solid #e7e5e4; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); min-width: 8rem; z-index: 50; padding: 0.5rem; }
+    .lang-menu button { display: block; width: 100%; text-align: left; padding: 0.75rem 1rem; font-size: 0.95rem; border-radius: 12px; background: none; border: none; cursor: pointer; }
+    .lang-menu button:hover { background-color: #f8f5f2; }
+    @media (max-width: 768px) { .desktop-nav { display: none; } .mobile-menu-btn { display: none !important; } }
+    .mobile-menu-btn { display: none !important; }
+    .input-field { width: 100%; padding: 0.75rem 1rem; border: 2px solid #e7e5e4; border-radius: 12px; font-size: 0.95rem; transition: all 0.3s ease; background: white; }
+    .input-field:focus { outline: none; border-color: #e67e22; box-shadow: 0 0 0 3px rgba(244, 162, 97, 0.15); }
+    .btn-primary { display: inline-block; width: 100%; padding: 0.875rem 1.5rem; background: #e67e22; color: white; border-radius: 50px; font-weight: 600; font-size: 1rem; transition: all 0.3s; box-shadow: 0 4px 15px rgba(230, 126, 34, 0.3); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(244, 162, 97, 0.4); }
+    .section-title { font-size: 1.5rem; font-weight: 700; color: #264653; }
+    .auth-container { max-width: 28rem; margin: 0 auto; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-background">
+  <!-- Navbar -->
+  <div id="navbar" style="flex:none;"></div>
+
+  <!-- Main Content -->
+  <main class="flex-1 flex items-center justify-center py-12 px-4">
+    <div class="auth-container w-full max-w-md">
+      <h2 class="section-title text-2xl text-center mb-2">Se connecter</h2>
+      <p class="text-muted-foreground text-center text-sm mb-8">
+        Accédez à votre espace personnel
+      </p>
+
+      <div id="error-message" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+      </div>
+
+      <form id="login-form" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">Email</label>
+          <input name="email" type="email" id="email-input" class="input-field" placeholder="email@example.com" required />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Mot de passe</label>
+          <div class="relative">
+            <input name="password" type="password" id="password-input" class="input-field pr-10" placeholder="••••••••" required />
+            <button type="button" onclick="togglePassword()" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+              <svg id="eye-icon" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <svg id="eye-off-icon" class="w-4 h-4 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.72a15 15 0 0 1-3.06-4.56M1 1l22 22"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" id="submit-btn" class="btn-primary w-full mt-2">
+          Se connecter
+        </button>
+      </form>
+
+      <p class="text-center text-sm text-muted-foreground mt-4">
+        Pas de compte? <a href="#" class="text-primary hover:underline">S'inscrire</a>
+      </p>
+      
+      <div class="mt-6 p-4 bg-muted rounded-lg">
+        <p class="text-xs text-muted-foreground text-center">
+          Compte démo:<br />
+          Client: client@test.com<br />
+          Propriétaire: proprio@test.com<br />
+          Mot de passe: password123
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <div id="footer" style="flex:none;"></div>
+</body>
+</html>

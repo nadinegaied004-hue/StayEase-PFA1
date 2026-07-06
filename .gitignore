@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+
+# Environment / Credentials
+db.php
+.env
+.env.*
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Archives
+*.zip
+
+# Debug / Logs
+api/debug_log.txt
+*.log
+
+# Generated SQL dumps (keep only database/ folder)
+stayease_dump.sql
+stayease_deploy.sql
+stayease_clean.sql
+stayease_data.sql
+stayease_schema.sql
+
+# Utility scripts (not needed in production)
+insert_data.php
+show_database.php

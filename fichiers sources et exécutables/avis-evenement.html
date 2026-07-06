@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StayEase - Avis Clients Événements</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+  <script src="navbar.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#e67e22',
+            'primary-hover': '#e67e22',
+            'primary-light': '#fef3e2',
+            'hotel-dark': '#264653',
+            'hotel-cream': '#fefae0',
+            background: '#fdfbf7',
+            card: '#ffffff',
+            muted: '#f8f5f2',
+            'muted-foreground': '#78716c',
+            foreground: '#292524',
+            border: '#e7e5e4',
+            input: '#e7e5e4',
+            accent: '#2a9d8f',
+          },
+          fontFamily: {
+            display: ['Quicksand', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
+    body { font-family: 'Quicksand', system-ui, sans-serif; background-color: #fdfbf7; color: #292524; }
+    body.dark { --bg-color: #1c1917; }
+    body.dark { background-color: #1c1917; color: #fafaf9; }
+    body.dark .navbar { background: #ffffff; }
+    body.dark .nav-link { color: #fafaf9; }
+    body.dark .nav-link:hover { background-color: #44403c; }
+    body.dark .nav-link-active { background-color: #422006; color: #e67e22; }
+    body.dark .desktop-nav { background: #292524; }
+    body.dark .lang-menu { background: #292524; border-color: #44403c; }
+    body.dark .lang-menu button:hover { background-color: #44403c; }
+    
+    .navbar { background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.06); position: fixed; top: 0; left: 0; right: 0; z-index: 50; }
+    .nav-link { padding: 0.75rem 1.25rem; border-radius: 50px; color: #292524; transition: all 0.3s ease; font-weight: 500; }
+    .nav-link:hover { background-color: #f8f5f2; color: #e67e22; }
+    .nav-link-active { background-color: #fef3e2; color: #e67e22; }
+    .lang-menu { position: absolute; right: 0; top: 100%; margin-top: 0.5rem; background: white; border: 1px solid #e7e5e4; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); min-width: 8rem; z-index: 50; padding: 0.5rem; }
+    .lang-menu button { display: block; width: 100%; text-align: left; padding: 0.75rem 1rem; font-size: 0.95rem; border-radius: 12px; }
+    .lang-menu button:hover { background-color: #f8f5f2; }
+    .mobile-menu { background: white; border-bottom: 1px solid #e7e5e4; }
+    body.dark .mobile-menu { background: #292524; }
+    .theme-btn { cursor: pointer; padding: 0.5rem; border-radius: 50px; }
+    .theme-btn:hover { background-color: #f8f5f2; }
+    @media (max-width: 768px) { .desktop-nav { display: none; } .mobile-menu-btn { display: block; } }
+    @media (min-width: 769px) { .mobile-menu { display: none !important; } .mobile-menu-btn { display: none; } }
+    
+    
+    
+    .input-field { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; font-size: 0.875rem; }
+    .input-field:focus { outline: none; border-color: #e67e22; }
+    .btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.625rem 1rem; background-color: #e67e22; color: white; border-radius: 0.375rem; font-weight: 600; transition: background-color 0.2s; border: none; cursor: pointer; }
+    .btn-primary:hover { background-color: #d35400; }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .section-title { font-size: 1.5rem; font-weight: 700; color: #1a1a2e; }
+    .btn-outline { display: inline-flex; align-items: center; justify-content: center; padding: 0.5rem 1rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; font-weight: 500; transition: all 0.2s; cursor: pointer; }
+    .btn-outline:hover { background-color: #f5f5f5; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-background">
+  <!-- Navbar -->
+  <div id="navbar" style="flex:none;"></div>
+      <div class="desktop-nav flex items-center gap-1">
+        <a href="index.html" class="nav-link">Accueil</a>
+        <a href="hotels.html" class="nav-link">Logements</a>
+        <a href="avis.html" class="nav-link">Avis Clients</a>
+        <a href="avis-personnel.html" class="nav-link">Avis Personnel</a>
+      </div>
+      <div class="desktop-nav flex items-center gap-3" id="user-section">
+        <a href="connexion.html" class="btn-primary text-sm !py-2 !px-4">Se connecter</a>
+      </div>
+      <button class="mobile-menu-btn p-2" onclick="toggleMobileMenu()">
+        <span id="mobile-menu-icon">☰</span>
+      </button>
+    </div>
+    <div id="mobile-menu" class="mobile-menu px-4 pb-4 space-y-2 hidden">
+      <a href="index.html" class="block nav-link">Accueil</a>
+      <a href="hotels.html" class="block nav-link">Logements</a>
+      <a href="avis.html" class="block nav-link">Avis Clients</a>
+      <a href="avis-personnel.html" class="block nav-link">Avis Clients Personnel</a>
+      <a href="connexion.html" class="btn-primary text-sm !py-2 text-center">Se connecter</a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="flex-1 container mx-auto px-4 py-10">
+    <button onclick="window.location.href='avis-personnel.html'" class="mb-4 text-primary hover:underline">
+      ← Retour à l'historique
+    </button>
+    
+    <h2 class="section-title text-center mb-2">Évaluer les événements</h2>
+    <p class="text-muted-foreground text-center mb-8">
+      Partagez votre expérience sur les événements auxquels vous avez assisté
+    </p>
+
+    <!-- Step 1: Select Reservation -->
+    <div id="step-1" class="max-w-2xl mx-auto">
+      <h3 class="font-semibold text-lg mb-4">Sélectionnez votre séjour</h3>
+      <div class="space-y-3" id="reservations-list">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- Step 2: Event Feedback -->
+    <div id="step-2" class="hidden max-w-2xl mx-auto">
+      <div class="bg-card rounded-xl border border-border p-6">
+        <h3 class="font-semibold text-lg mb-1">Événements</h3>
+        <p class="text-sm text-muted-foreground mb-6">Sélectionnez les événements auxquels vous avez assisté</p>
+
+        <div class="space-y-6">
+          <div>
+            <div class="flex flex-wrap gap-2" id="events-buttons">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <div id="feedback-forms">
+            <!-- Populated by JS -->
+          </div>
+
+          <div>
+            <span class="text-sm font-medium block mb-2">Avez-vous pris des photos</span>
+            <button onclick="handlePhotoUpload()" class="flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed text-sm transition-colors border-border text-muted-foreground hover:border-primary hover:text-primary">
+              📷 Télécharger des photos
+            </button>
+            <div id="photos-preview" class="flex gap-2 mt-2 flex-wrap"></div>
+          </div>
+
+          <button id="submit-btn" onclick="handleSubmit()" class="w-full btn-primary" disabled>
+            📤 Soumettre
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Success -->
+    <div id="step-3" class="hidden max-w-lg mx-auto text-center">
+      <div class="p-8 rounded-xl bg-green-50 border border-green-200">
+        <h3 class="font-semibold text-xl text-green-700 mb-2">
+          Merci beaucoup !
+        </h3>
+        <p class="text-muted-foreground">
+          Votre avis a été enregistré avec succès.
+        </p>
+        <button onclick="handleReset()" class="mt-4 btn-primary">
+          Retour à l'historique
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <div id="footer" style="flex:none;"></div>
+</body>
+    let reservations = [];
+    let selectedReservation = null;
+    let selectedEvenements = [];
+    let eventFeedback = {};
+    let photos = [];
+    let submitted = false;
+
+    const qualiteOptions = ["Très satisfaisante", "Satisfaisante", "Moyenne", "Insatisfaisante"];
+    const fouleOptions = ["Très calme", "Calme", "Modérée", "Fortement fréquenté"];
+    const prixOptions = ["Très raisonnable", "Raisonnable", "Cher", "Très cher"];
+    const infraOptions = ["Excellente", "Bonne", "Passable", "Insuffisante"];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchReservations();
+    });
+
+    async function fetchReservations() {
+      try {
+        const res = await fetch('api/reservations.php');
+        const data = await res.json();
+        if (data.success && data.reservations) {
+          reservations = data.reservations.map(r => ({
+            id: r.id_reservation,
+            nomLog: r.nom_logement,
+            dateDebut: r.date_debut,
+            dateFin: r.date_fin,
+            periode: calculateDays(r.date_debut, r.date_fin) + " nuits",
+            evenements: r.evenements ? JSON.parse(r.evenements) : []
+          }));
+        }
+      } catch (err) {
+        console.error('Error fetching reservations:', err);
+      }
+      renderReservations();
+    }
+
+    function calculateDays(debut, fin) {
+      const d1 = new Date(debut);
+      const d2 = new Date(fin);
+      return Math.ceil((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24));
+    }
+
+    function renderReservations() {
+      const container = document.getElementById('reservations-list');
+      container.innerHTML = '';
+      
+      reservations.forEach(r => {
+        const btn = document.createElement('button');
+        btn.className = 'w-full p-4 rounded-lg border border-border bg-card hover:bg-accent hover:text-accent-foreground transition-colors text-left';
+        btn.onclick = () => selectReservation(r.id);
+        btn.innerHTML = `
+          <div class="font-semibold">${r.nomLog}</div>
+          <div class="text-sm text-muted-foreground">${r.dateDebut} - ${r.dateFin} (${r.periode})</div>
+        `;
+        container.appendChild(btn);
+      });
+    }
+
+    function selectReservation(id) {
+      selectedReservation = reservations.find(r => r.id === id);
+      if (!selectedReservation) return;
+      
+      document.getElementById('step-1').classList.add('hidden');
+      document.getElementById('step-2').classList.remove('hidden');
+      
+      renderEventButtons();
+    }
+
+    function renderEventButtons() {
+      const container = document.getElementById('events-buttons');
+      container.innerHTML = '';
+      
+      const events = selectedReservation?.evenements || [];
+      events.forEach(event => {
+        const btn = document.createElement('button');
+        const isSelected = selectedEvenements.includes(event);
+        btn.className = `px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+          isSelected ? 'bg-orange-500 text-white' : 'bg-muted text-foreground hover:bg-orange-100 border border-border'
+        }`;
+        btn.onclick = () => toggleEvenement(event);
+        btn.textContent = (isSelected ? '✓ ' : '') + event;
+        container.appendChild(btn);
+      });
+    }
+
+    function toggleEvenement(event) {
+      if (selectedEvenements.includes(event)) {
+        selectedEvenements = selectedEvenements.filter(e => e !== event);
+        delete eventFeedback[event];
+      } else {
+        selectedEvenements.push(event);
+        eventFeedback[event] = {
+          qualite: null, organise: null, recommande: null, accessible: null,
+          foule: null, prix: null, infrastructure: null, famille: null, commentaire: ""
+        };
+      }
+      renderEventButtons();
+      renderFeedbackForms();
+      checkAllAnswered();
+    }
+
+    function renderFeedbackForms() {
+      const container = document.getElementById('feedback-forms');
+      container.innerHTML = '';
+      
+      selectedEvenements.forEach(event => {
+        const feedback = eventFeedback[event] || {};
+        
+        const div = document.createElement('div');
+        div.className = 'p-4 rounded-lg bg-amber-50 border border-amber-200';
+        div.innerHTML = `
+          <h5 class="font-semibold mb-3 text-amber-800">${event}</h5>
+          <div class="space-y-3">
+            <div>
+              <span class="text-sm font-medium block mb-2">Comment évaluez-vous la qualité de cet événement</span>
+              <div class="flex flex-wrap gap-2">
+                ${qualiteOptions.map(opt => `
+                  <button onclick="setFeedback('${event}', 'qualite', '${opt}')" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${feedback.qualite === opt ? 'bg-green-600 text-white' : 'bg-white text-foreground hover:bg-green-100 border border-border'}">${opt}</button>
+                `).join('')}
+              </div>
+            </div>
+            <div>
+              <span class="text-sm font-medium block mb-2">L'événement était-il bien organisé</span>
+              <div class="flex gap-2">
+                <button onclick="setFeedback('${event}', 'organise', true)" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${feedback.organise === true ? 'bg-green-600 text-white' : 'bg-white text-foreground hover:bg-green-100 border border-border'}">Oui</button>
+                <button onclick="setFeedback('${event}', 'organise', false)" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${feedback.organise === false ? 'bg-red-600 text-white' : 'bg-white text-foreground hover:bg-green-100 border border-border'}">Non</button>
+              </div>
+            </div>
+            <div>
+              <span class="text-sm font-medium block mb-2">Recommanderiez-vous cet événement</span>
+              <div class="flex gap-2">
+                <button onclick="setFeedback('${event}', 'recommande', true)" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${feedback.recommande === true ? 'bg-green-600 text-white' : 'bg-white text-foreground hover:bg-green-100 border border-border'}">Oui</button>
+                <button onclick="setFeedback('${event}', 'recommande', false)" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${feedback.recommande === false ? 'bg-red-600 text-white' : 'bg-white text-foreground hover:bg-green-100 border border-border'}">Non</button>
+              </div>
+            </div>
+            <div>
+              <span class="text-sm font-medium block mb-2">L'événement était-il accessible aux personnes à mobilité réduite</span>
+              <div class="flex gap-2">
+                <button onclick="setFeedback('${event}', 'accessible', true)" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${feedback.accessible === true ? 'bg-green-600 text-white' : 'bg-white text-foreground hover:bg-green-100 border border-border'}">Oui</button>
+                <button onclick="setFeedback('${event}', 'accessible', false)" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${feedback.accessible === false ? 'bg-red-600 text-white' : 'bg-white text-foreground hover:bg-green-100 border border-border'}">Non</button>
+              </div>
+            </div>
+            <div>
+              <span class="text-sm font-medium block mb-2">Comment évaluez-vous l'affluence</span>
+              <div class="flex flex-wrap gap-2">
+                ${fouleOptions.map(opt => `
+                  <button onclick="setFeedback('${event}', 'foule', '${opt}')" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${feedback.foule === opt ? 'bg-green-600 text-white' : 'bg-white text-foreground hover:bg-green-100 border border-border'}">${opt}</button>
+                `).join('')}
+              </div>
+            </div>
+            <div>
+              <span class="text-sm font-medium block mb-2">Le prix des billets était-il raisonnable</span>
+              <div class="flex flex-wrap gap-2">
+                ${prixOptions.map(opt => `
+                  <button onclick="setFeedback('${event}', 'prix', '${opt}')" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${feedback.prix === opt ? 'bg-green-600 text-white' : 'bg-white text-foreground hover:bg-green-100 border border-border'}">${opt}</button>
+                `).join('')}
+              </div>
+            </div>
+            <div>
+              <span class="text-sm font-medium block mb-2">L'infrastructure de l'événement était-elle adequate</span>
+              <div class="flex flex-wrap gap-2">
+                ${infraOptions.map(opt => `
+                  <button onclick="setFeedback('${event}', 'infrastructure', '${opt}')" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${feedback.infrastructure === opt ? 'bg-green-600 text-white' : 'bg-white text-foreground hover:bg-green-100 border border-border'}">${opt}</button>
+                `).join('')}
+              </div>
+            </div>
+            <div>
+              <span class="text-sm font-medium block mb-2">L'événement était-il adapté aux familles</span>
+              <div class="flex gap-2">
+                <button onclick="setFeedback('${event}', 'famille', true)" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${feedback.famille === true ? 'bg-green-600 text-white' : 'bg-white text-foreground hover:bg-green-100 border border-border'}">Oui</button>
+                <button onclick="setFeedback('${event}', 'famille', false)" class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${feedback.famille === false ? 'bg-red-600 text-white' : 'bg-white text-foreground hover:bg-green-100 border border-border'}">Non</button>
+              </div>
+            </div>
+            <div>
+              <label class="text-sm font-medium block mb-2">Commentaires sur cet événement (facultatif)</label>
+              <textarea oninput="setComment('${event}', this.value)" class="input-field min-h-[60px] text-sm" placeholder="Votre commentaire...">${feedback.commentaire || ''}</textarea>
+            </div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function setFeedback(event, field, value) {
+      if (!eventFeedback[event]) eventFeedback[event] = {};
+      eventFeedback[event][field] = value;
+      renderFeedbackForms();
+      checkAllAnswered();
+    }
+
+    function setComment(event, value) {
+      if (!eventFeedback[event]) eventFeedback[event] = {};
+      eventFeedback[event].commentaire = value;
+    }
+
+    function checkAllAnswered() {
+      const allAnswered = selectedEvenements.length > 0 && selectedEvenements.every(evt => {
+        const f = eventFeedback[evt];
+        return f && f.qualite !== null && f.organise !== null && f.recommande !== null &&
+          f.accessible !== null && f.foule !== null && f.prix !== null && f.infrastructure !== null && f.famille !== null;
+      });
+      
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = !allAnswered;
+    }
+
+    function handlePhotoUpload() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.multiple = true;
+      input.onchange = (e) => {
+        const files = e.target.files;
+        if (files) {
+          Array.from(files).forEach(file => {
+            photos.push(URL.createObjectURL(file));
+          });
+          renderPhotos();
+        }
+      };
+      input.click();
+    }
+
+    function renderPhotos() {
+      const container = document.getElementById('photos-preview');
+      container.innerHTML = '';
+      photos.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'relative w-20 h-20 rounded-lg overflow-hidden border';
+        div.innerHTML = `<img src="${p}" alt="Photo" class="w-full h-full object-cover">`;
+        container.appendChild(div);
+      });
+    }
+
+    function handleSubmit() {
+      submitted = true;
+      document.getElementById('step-2').classList.add('hidden');
+      document.getElementById('step-3').classList.remove('hidden');
+    }
+
+    function handleReset() {
+      submitted = false;
+      selectedReservation = null;
+      selectedEvenements = [];
+      eventFeedback = {};
+      photos = [];
+      
+      document.getElementById('step-3').classList.add('hidden');
+      document.getElementById('step-1').classList.remove('hidden');
+    }
+
+</body>
+</html>

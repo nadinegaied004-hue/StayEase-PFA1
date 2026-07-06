@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StayEase - Mon Historique</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+  <script src="navbar.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
+    body { 
+      font-family: 'Quicksand', system-ui, sans-serif; 
+      background-color: #fdfbf7; 
+      color: #292524; 
+      overflow-x: auto;
+    }
+    .navbar { background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+    .welcome-section {
+      background: linear-gradient(135deg, #e67e22 0%, #d97706 100%);
+      color: white;
+      padding: 2rem 1rem;
+      margin: 5rem 1rem 2rem 1rem;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(230, 126, 34, 0.3);
+    }
+    .welcome-section h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .welcome-section p {
+      font-size: 1.1rem;
+      opacity: 0.95;
+    }
+    .reservation-card {
+      background: white;
+      border: 1px solid #e7e5e4;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      min-width: 600px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      transition: all 0.3s ease;
+    }
+    .reservation-card:hover {
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      transform: translateY(-2px);
+    }
+    .reservation-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      border-bottom: 2px solid #f8f5f2;
+      padding-bottom: 1rem;
+    }
+    .reservation-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #264653;
+    }
+    .status-badge {
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+    .status-acceptee {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+    .status-en-attente {
+      background: #fef3c7;
+      color: #b45309;
+    }
+    .reservation-details {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .detail-item {
+      padding: 0.75rem;
+      background: #f8f5f2;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .detail-label {
+      font-size: 0.875rem;
+      color: #78716b;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+    .detail-value {
+      font-size: 1.125rem;
+      color: #264653;
+      font-weight: 600;
+    }
+    .avis-section {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e7e5e4;
+    }
+    .rating {
+      display: flex;
+      gap: 0.25rem;
+      align-items: center;
+    }
+    .star {
+      color: #f59e0b;
+      font-size: 1.25rem;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      background: white;
+      border-radius: 12px;
+      border: 2px dashed #e7e5e4;
+      margin: 2rem 1rem;
+    }
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+    .container-custom {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding-bottom: 2rem;
+      padding-left: 1rem;
+      padding-right: 1rem;
+      overflow-x: auto;
+    }
+    .reservation-card {
+      overflow: visible;
+      word-wrap: break-word;
+      min-width: 0;
+    }
+    main {
+      overflow-x: visible;
+    }
+    html, body {
+      overflow-x: visible;
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar" style="flex:none;"></div>
+  
+  <main style="overflow-x: visible;">
+    <div id="welcome-message" class="welcome-section hidden">
+      <h1 id="greeting-text"></h1>
+      <p>Découvrez votre historique de réservations</p>
+    </div>
+
+    <div class="container-custom" style="overflow-x: visible;">
+      <div id="reservations-container" style="overflow-x: visible;">
+        <div class="empty-state" style="overflow-x: visible;">
+          <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #292524;">Aucune réservation</h2>
+          <p style="color: #78716b;">Vous n'avez pas encore de réservations. Commencez à explorer nos logements!</p>
+          <a href="hotels.html" style="display: inline-block; margin-top: 1rem; padding: 0.75rem 1.5rem; background: #e67e22; color: white; border-radius: 50px; text-decoration: none; font-weight: 600;">Explorez les logements</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="footer"></div>
+
+  <script>
+    function checkAuth() {
+      var userStr = localStorage.getItem('user');
+      if (!userStr) {
+        window.location.href = 'connexion.html';
+        return;
+      }
+      return JSON.parse(userStr);
+    }
+
+    async function loadReservations() {
+      var user = checkAuth();
+      
+      // Show personalized welcome message
+      var greeting = document.getElementById('greeting-text');
+      var welcomeSection = document.getElementById('welcome-message');
+      var prenom = user.prenom || '';
+      var nom = user.nom || '';
+      
+      greeting.textContent = 'Bienvenue, ' + prenom + ' ' + nom + '!';
+      welcomeSection.classList.remove('hidden');
+
+      try {
+        let apiUrl = 'api/get-reservations.php?user_id=' + user.id;
+        if (user.email) {
+          apiUrl += '&email=' + encodeURIComponent(user.email);
+        }
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        const container = document.getElementById('reservations-container');
+        
+        if (data.success && data.reservations.length > 0) {
+          container.innerHTML = '';
+          
+          data.reservations.forEach(function(res) {
+            const statusClass = res.statut === 'acceptee' ? 'status-acceptee' : 'status-en-attente';
+            const statusText = res.statut === 'acceptee' ? 'Acceptée' : 'En attente';
+            
+            const stars = '★'.repeat(res.avis_note || 0) + '☆'.repeat(5 - (res.avis_note || 0));
+            const aviSection = res.avis_commentaire ? 
+              `<div class="avis-section">
+                <div style="font-weight: 600; margin-bottom: 0.5rem;">Votre avis:</div>
+                <div class="rating">
+                  <span class="star">${stars}</span>
+                  <span style="color: #f59e0b; font-weight: 600;">${res.avis_note || 0}/5</span>
+                </div>
+                <p style="margin-top: 0.5rem; color: #78716b; font-style: italic;">"${res.avis_commentaire}"</p>
+              </div>` : '';
+
+            const card = `
+              <div class="reservation-card">
+                <div class="reservation-header">
+                  <div class="reservation-title">${res.logement_description || 'Logement'}</div>
+                  <div class="status-badge ${statusClass}">${statusText}</div>
+                </div>
+                <div class="reservation-details">
+                  <div class="detail-item">
+                    <div class="detail-label">Date d'arrivée</div>
+                    <div class="detail-value">${new Date(res.date_debut).toLocaleDateString('fr-FR')}</div>
+                  </div>
+                  <div class="detail-item">
+                    <div class="detail-label">Date de départ</div>
+                    <div class="detail-value">${new Date(res.date_fin).toLocaleDateString('fr-FR')}</div>
+                  </div>
+                  <div class="detail-item">
+                    <div class="detail-label">Durée</div>
+                    <div class="detail-value">${calculateDays(res.date_debut, res.date_fin)} nuit(s)</div>
+                  </div>
+                </div>
+                ${aviSection}
+              </div>
+            `;
+            container.innerHTML += card;
+          });
+        } else {
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-icon">📋</div>
+              <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #292524;">Aucune réservation</h2>
+              <p style="color: #78716b;">Vous n'avez pas encore de réservations. Commencez à explorer nos logements!</p>
+              <a href="hotels.html" style="display: inline-block; margin-top: 1rem; padding: 0.75rem 1.5rem; background: #e67e22; color: white; border-radius: 50px; text-decoration: none; font-weight: 600;">Explorez les logements</a>
+            </div>
+          `;
+        }
+      } catch (err) {
+        console.error('Error loading reservations:', err);
+        document.getElementById('reservations-container').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">⚠️</div>
+            <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem; color: #292524;">Erreur</h2>
+            <p style="color: #78716b;">Impossible de charger vos réservations.</p>
+          </div>
+        `;
+      }
+    }
+
+    function calculateDays(start, end) {
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+      const diffTime = Math.abs(endDate - startDate);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      loadReservations();
+    });
+  </script>
+</body>
+</html>

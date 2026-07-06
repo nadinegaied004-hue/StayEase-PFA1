@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StayEase - Mon espace avis</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+  <script src="navbar.js"></script>
+  <script>
+    setTimeout(function() {
+      var footerContainer = document.getElementById('footer');
+      if (footerContainer) footerContainer.innerHTML = footerHTML;
+    }, 100);
+  </script>
+  <style>
+    .hotel-table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+    .hotel-table th { background: #f5f5f5; font-weight: 600; padding: 10px; text-align: center; border-bottom: 2px solid #ddd; }
+    .hotel-table td { padding: 8px 10px; border-bottom: 1px solid #eee; text-align: center; }
+    .hotel-table td:first-child { padding-left: 20px; text-align: left; }
+    .hotel-table th:first-child { padding-left: 20px; text-align: left; }
+    .hotel-table th:nth-child(1) { width: 30%; }
+    .hotel-table th:nth-child(2) { width: 22%; }
+    .hotel-table th:nth-child(3) { width: 18%; }
+    .hotel-table th:nth-child(4) { width: 30%; }
+    .btn-primary { display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 1rem; background-color: #e67e22; color: white; border-radius: 0.375rem; font-weight: 600; border: none; cursor: pointer; }
+    .btn-primary:hover { background-color: #d35400; }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .section-title { font-size: 1.5rem; font-weight: 700; color: #1a1a2e; }
+    .form-section { margin-bottom: 1.5rem; }
+    .form-section h4 { font-weight: 600; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+    .form-section h4 span { color: #e67e22; }
+    .option-btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.5rem 1rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; font-weight: 500; transition: all 0.2s; cursor: pointer; background: #fafafa; }
+    .option-btn:hover { background-color: #f5f5f5; }
+    .option-btn.selected { background-color: #e67e22; color: white; border-color: #e67e22; }
+  </style>
+</head>
+<body style="margin:0;min-height:100vh;display:flex;flex-direction:column;font-family:system-ui,sans-serif;">
+  <div id="navbar" style="flex:none;"></div>
+
+  <main class="flex-1 container mx-auto px-4 py-10" style="margin-bottom: 8rem;">
+    <h2 class="section-title text-center mb-2">Mon espace avis - Historique des logements</h2>
+    <p class="text-muted-foreground text-center mb-8">Veuillez répondre avec toute transparence</p>
+
+    <div id="reservations-table" class="overflow-x-auto rounded-lg border border-border mb-16">
+      <table class="hotel-table w-full">
+        <thead>
+          <tr>
+            <th>Nom du logement</th>
+            <th>Dates</th>
+            <th>Durée du séjour</th>
+            <th>Questionnaires</th>
+          </tr>
+        </thead>
+        <tbody id="all-reservations-body"></tbody>
+      </table>
+    </div>
+
+    <div id="form-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.5);">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="sticky top-0 bg-white border-b border-border p-4 flex items-center justify-between">
+          <h3 id="form-title" class="font-semibold text-lg">Questionnaire d'évaluation</h3>
+          <button onclick="closeFormModal()" class="text-muted-foreground hover:text-foreground text-2xl">&times;</button>
+        </div>
+        <div id="form-content" class="p-4 space-y-4"></div>
+      </div>
+    </div>
+  </main>
+
+  <div id="footer" style="flex:none;"></div>
+
+  <script>
+    var reservations = [];
+    var selectedReservation = null;
+    var currentTab = 'logement';
+    var reponses = {};
+    var userAvis = { 
+      logement: [], 
+      attraction: [], 
+      evenement: [], 
+      attractionItems: {}, 
+      evenementItems: {} 
+    };
+    
+    // Load from localStorage on init
+    (function loadUserAvisFromStorage() {
+      try {
+        const saved = localStorage.getItem('userAvis');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.attractionItems) userAvis.attractionItems = parsed.attractionItems;
+          if (parsed.evenementItems) userAvis.evenementItems = parsed.evenementItems;
+          if (parsed.logement) userAvis.logement = parsed.logement;
+        }
+      } catch(e) { console.error('Error parsing userAvis:', e); }
+    })();
+
+    async function fetchReservations() {
+      try {
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        if (!user) {
+          window.location.href = 'connexion.html';
+          return;
+        }
+        
+        // Fetch existing reviews from API to populate localStorage
+        try {
+          const avisRes = await fetch('api/get-user-avis.php?email=' + encodeURIComponent(user.email));
+          const avisData = await avisRes.json();
+          if (avisData.success && avisData.avis) {
+            // Get existing reviews and save to localStorage
+            const existingAvis = {
+              logement: avisData.avis.logement || [],
+              attraction: avisData.avis.attraction || [],
+              evenement: avisData.avis.evenement || [],
+              attractionItems: {},
+              evenementItems: {}
+            };
+            localStorage.setItem('userAvis', JSON.stringify(existingAvis));
+          }
+        } catch(e) { console.log('Could not load existing reviews'); }
+        
+        let apiUrl = 'api/get-reservations.php?user_id=' + user.id;
+        if (user.email) {
+          apiUrl += '&email=' + encodeURIComponent(user.email);
+        }
+        
+        const res = await fetch(apiUrl);
+        const data = await res.json();
+        
+        if (data.success && data.reservations) {
+          reservations = data.reservations;
+        }
+
+        // Fetch user's existing avis
+        if (user.email) {
+          const avisRes = await fetch('api/get-user-avis.php?email=' + encodeURIComponent(user.email));
+          const avisData = await avisRes.json();
+          if (avisData.success && avisData.avis) {
+            // Merge API data with localStorage data (don't replace)
+            if (avisData.avis.logement) userAvis.logement = avisData.avis.logement;
+            if (avisData.avis.attraction) userAvis.attraction = avisData.avis.attraction;
+            if (avisData.avis.evenement) userAvis.evenement = avisData.avis.evenement;
+            
+            // Load additional tracking from localStorage (these are the individual item reviews)
+            const savedAvis = localStorage.getItem('userAvis');
+            if (savedAvis) {
+              const parsed = JSON.parse(savedAvis);
+              if (parsed.attractionItems) userAvis.attractionItems = parsed.attractionItems;
+              if (parsed.evenementItems) userAvis.evenementItems = parsed.evenementItems;
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching reservations:', err);
+      }
+      renderAllReservations();
+    }
+
+    function calculateDays(date1, date2) {
+      const d1 = new Date(date1);
+      const d2 = new Date(date2);
+      return Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
+    }
+
+    function renderAllReservations() {
+      const tbody = document.getElementById('all-reservations-body');
+      tbody.innerHTML = '';
+      
+      if (reservations.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;">Aucune réservation trouvée</td></tr>';
+        return;
+      }
+      
+      reservations.forEach(r => {
+        const row = document.createElement('tr');
+        
+        const nomLog = r.nom_logement || r.nomLog || 'Logement #' + r.id_logement;
+        const dateDebut = r.date_debut || r.dateDebut;
+        const dateFin = r.date_fin || r.dateFin;
+        const periode = r.periode || calculateDays(dateDebut, dateFin) + ' nuits';
+        const logementId = r.id_logement;
+        
+        const reservationId = r.id_reservation || r.id;
+        const hasLogementAvis = userAvis.logement.includes(parseInt(r.id_logement));
+        
+        const attractionsList = r.attractions || [];
+        const evenementsList = r.evenements || [];
+        
+        // Format attractions list with names and descriptions
+        const attractionNames = attractionsList.slice(0, 5).map(a => a.NOM_ATTRACTION || a.nom_attraction || 'Attraction');
+        const evenementNames = evenementsList.slice(0, 5).map(e => e.NOM_EVENEMENT || e.nom_evenement || 'Événement');
+        
+        // Get already reviewed items for this reservation (from localStorage)
+        const reservationKey = r.id_reservation || r.id;
+        const reviewedAttractions = userAvis.attractionItems?.[reservationKey] || [];
+        const reviewedEvenements = userAvis.evenementItems?.[reservationKey] || [];
+        
+        const allAttractionsReviewed = attractionNames.length > 0 && attractionNames.every(a => reviewedAttractions.includes(a));
+        const allEvenementsReviewed = evenementNames.length > 0 && evenementNames.every(e => reviewedEvenements.includes(e));
+        
+        const safeAttractions = attractionNames.join('|');
+        const safeEvenements = evenementNames.join('|');
+        
+        const logementBtn = hasLogementAvis 
+          ? `<button disabled class="px-2 py-1 rounded text-xs bg-gray-300 text-gray-500 mr-1 mb-1 cursor-not-allowed" style="min-width:150px;">🏠 ${nomLog} ✓</button>`
+          : `<button onclick="selectReservation(${reservationId}, 'logement')" class="px-2 py-1 rounded text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 mr-1 mb-1" style="min-width:150px;">🏠 ${nomLog}</button>`;
+        
+        const attractionBtn = attractionNames.length > 0 
+          ? allAttractionsReviewed
+            ? `<button disabled class="px-2 py-1 rounded text-xs bg-gray-300 text-gray-500 mr-1 mb-1 cursor-not-allowed" style="min-width:150px;">🎢 Attraction ✓</button>`
+            : `<button onclick="showAttractionSelector(${reservationId}, '${safeAttractions.replace(/'/g, "\\'")}')" class="px-2 py-1 rounded text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 mr-1 mb-1" style="min-width:150px;">🎢 Attraction ▾</button>`
+          : '<button disabled class="px-2 py-1 rounded text-xs bg-gray-200 text-gray-400 mr-1 mb-1 cursor-not-allowed">🎢 -</button>';
+        
+        const evenementBtn = evenementNames.length > 0
+          ? allEvenementsReviewed
+            ? `<button disabled class="px-2 py-1 rounded text-xs bg-gray-300 text-gray-500 mr-1 mb-1 cursor-not-allowed" style="min-width:150px;">🎪 Événement ✓</button>`
+            : `<button onclick="showEvenementSelector(${reservationId}, '${safeEvenements.replace(/'/g, "\\'")}')" class="px-2 py-1 rounded text-xs bg-purple-100 text-purple-700 hover:bg-purple-200 mr-1 mb-1" style="min-width:150px;">🎪 Événement ▾</button>`
+          : '<button disabled class="px-2 py-1 rounded text-xs bg-gray-200 text-gray-400 mr-1 mb-1 cursor-not-allowed">🎪 -</button>';
+        
+        row.innerHTML = `
+          <td class="font-medium">${nomLog}</td>
+          <td>${dateDebut} - ${dateFin}</td>
+          <td>${periode}</td>
+          <td>
+            ${logementBtn}
+            ${attractionBtn}
+            ${evenementBtn}
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function setReponse(question, value, btn) {
+      reponses[question] = value;
+      var parent = btn.parentElement;
+      var siblings = parent.querySelectorAll('.option-btn');
+      siblings.forEach(function(b) { b.classList.remove('selected'); });
+      btn.classList.add('selected');
+    }
+
+    function selectReservation(id, type, itemName) {
+      selectedReservation = reservations.find(r => (r.id === id || r.id_reservation === id));
+      if (!selectedReservation) {
+        alert('Réservation non trouvée');
+        return;
+      }
+      currentTab = type;
+      reponses = {};
+      
+      if (type === 'logement') {
+        showLogementForm();
+      } else if (type === 'attraction') {
+        showAttractionForm(itemName);
+      } else if (type === 'evenement') {
+        showEvenementForm(itemName);
+      }
+    }
+
+    function showLogementForm() {
+      document.getElementById('form-title').textContent = 'Questionnaire d\'évaluation - Logement';
+      document.getElementById('form-modal').classList.remove('hidden');
+      document.getElementById('form-content').innerHTML = `
+        <div class="space-y-6">
+          <div class="form-section">
+            <h4><span>🔹</span> Évaluation générale</h4>
+            <p class="text-sm font-medium mb-2">Comment évaluez-vous votre expérience globale</p>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="setReponse('experience', 'Très satisfaisante', this)" class="option-btn">Très satisfaisante</button>
+              <button onclick="setReponse('experience', 'Satisfaisante', this)" class="option-btn">Satisfaisante</button>
+              <button onclick="setReponse('experience', 'Moyenne', this)" class="option-btn">Moyenne</button>
+              <button onclick="setReponse('experience', 'Insatisfaisante', this)" class="option-btn">Insatisfaisante</button>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4><span>🔹</span> Qualité du logement</h4>
+            <p class="text-sm font-medium mb-2">Le logement était-il conforme à vos attentes</p>
+            <div class="flex gap-4 mb-3">
+              <label class="flex items-center gap-2"><input type="radio" name="conforme" value="Oui"> Oui</label>
+              <label class="flex items-center gap-2"><input type="radio" name="conforme" value="Non"> Non</label>
+            </div>
+            <p class="text-sm font-medium mb-2">Le logement correspondait-il à la description</p>
+            <div class="flex gap-4 mb-3">
+              <label class="flex items-center gap-2"><input type="radio" name="description" value="Oui"> Oui</label>
+              <label class="flex items-center gap-2"><input type="radio" name="description" value="Non"> Non</label>
+            </div>
+            <p class="text-sm font-medium mb-2">Le logement était-il propre</p>
+            <div class="flex gap-4 mb-3">
+              <label class="flex items-center gap-2"><input type="radio" name="propre" value="Oui"> Oui</label>
+              <label class="flex items-center gap-2"><input type="radio" name="propre" value="Non"> Non</label>
+            </div>
+            <p class="text-sm font-medium mb-2">Le logement était-il sécurisé</p>
+            <div class="flex gap-4">
+              <label class="flex items-center gap-2"><input type="radio" name="securise" value="Oui"> Oui</label>
+              <label class="flex items-center gap-2"><input type="radio" name="securise" value="Non"> Non</label>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4><span>🔹</span> Propriétaire</h4>
+            <p class="text-sm font-medium mb-2">Comment évaluez-vous le comportement du propriétaire</p>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="setReponse('proprietaire', 'Excellent', this)" class="option-btn">Excellent</button>
+              <button onclick="setReponse('proprietaire', 'Bon', this)" class="option-btn">Bon</button>
+              <button onclick="setReponse('proprietaire', 'Moyen', this)" class="option-btn">Moyen</button>
+              <button onclick="setReponse('proprietaire', 'Insatisfaisant', this)" class="option-btn">Insatisfaisant</button>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4><span>🔹</span> Incidents</h4>
+            <p class="text-sm font-medium mb-2">Avez-vous rencontré un problème</p>
+            <div class="flex gap-4">
+              <label class="flex items-center gap-2"><input type="radio" name="incident" value="Oui"> Oui</label>
+              <label class="flex items-center gap-2"><input type="radio" name="incident" value="Non"> Non</label>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4><span>🔹</span> Recommandation</h4>
+            <p class="text-sm font-medium mb-2">Recommanderiez-vous ce logement</p>
+            <div class="flex gap-4">
+              <label class="flex items-center gap-2"><input type="radio" name="recommendation" value="Oui"> Oui</label>
+              <label class="flex items-center gap-2"><input type="radio" name="recommendation" value="Non"> Non</label>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4><span>🔹</span> Commentaire</h4>
+            <textarea id="comment" class="w-full p-3 border rounded-lg" rows="4" placeholder="Partagez votre expérience..."></textarea>
+          </div>
+
+          <button onclick="submitLogementAvis()" class="btn-primary w-full">📤 Valider le formulaire</button>
+        </div>
+      `;
+    }
+
+function showAttractionSelector(reservationId, attractionsStr) {
+      const attractions = attractionsStr.split('|');
+      const reviewedAttractions = userAvis.attractionItems?.[reservationId] || [];
+      
+      const listHtml = attractions.map(a => {
+        const attrName = a.trim();
+        const isReviewed = reviewedAttractions.includes(attrName);
+        if (isReviewed) {
+          return `<div class="p-3 border rounded-lg mb-2 bg-gray-100 cursor-not-allowed">
+            <div class="font-semibold text-gray-400">🎢 ${attrName} ✓ déjà noté</div>
+          </div>`;
+        }
+        return `<div class="p-3 border rounded-lg mb-2 hover:bg-blue-50 cursor-pointer" onclick="selectReservation(${reservationId}, 'attraction', '${attrName.replace(/'/g, "\\'")}')">
+          <div class="font-semibold text-blue-700">🎢 ${attrName}</div>
+        </div>`;
+      }).join('');
+      
+      document.getElementById('form-title').textContent = 'Sélectionnez une attraction';
+      document.getElementById('form-modal').classList.remove('hidden');
+      document.getElementById('form-content').innerHTML = `
+        <div class="max-h-96 overflow-y-auto">
+          <p class="text-sm text-gray-600 mb-3">Cliquez sur une attraction pour donner votre avis:</p>
+          ${listHtml}
+        </div>
+        <button onclick="closeFormModal()" class="mt-4 w-full py-2 border rounded-lg hover:bg-gray-100">Fermer</button>
+      `;
+    }
+    
+    function showEvenementSelector(reservationId, evenementsStr) {
+      const evenements = evenementsStr.split('|');
+      const reviewedEvenements = userAvis.evenementItems?.[reservationId] || [];
+      
+      const listHtml = evenements.map(e => {
+        const evtName = e.trim();
+        const isReviewed = reviewedEvenements.includes(evtName);
+        if (isReviewed) {
+          return `<div class="p-3 border rounded-lg mb-2 bg-gray-100 cursor-not-allowed">
+            <div class="font-semibold text-gray-400">🎪 ${evtName} ✓ déjà noté</div>
+          </div>`;
+        }
+        return `<div class="p-3 border rounded-lg mb-2 hover:bg-purple-50 cursor-pointer" onclick="selectReservation(${reservationId}, 'evenement', '${evtName.replace(/'/g, "\\'")}')">
+          <div class="font-semibold text-purple-700">🎪 ${evtName}</div>
+        </div>`;
+      }).join('');
+      
+      document.getElementById('form-title').textContent = 'Sélectionnez un événement';
+      document.getElementById('form-modal').classList.remove('hidden');
+      document.getElementById('form-content').innerHTML = `
+        <div class="max-h-96 overflow-y-auto">
+          <p class="text-sm text-gray-600 mb-3">Cliquez sur un événement pour donner votre avis:</p>
+          ${listHtml}
+        </div>
+        <button onclick="closeFormModal()" class="mt-4 w-full py-2 border rounded-lg hover:bg-gray-100">Fermer</button>
+      `;
+    }
+
+    function showAttractionForm(itemName) {
+      window.currentAttractionName = itemName || '';
+      const items = itemName ? itemName.split(',').map(s => s.trim()) : [];
+      const optionsHtml = items.map(item => `<option value="${item.replace(/"/g, '&quot;')}">${item}</option>`).join('');
+      
+      const selectHtml = items.length > 1 ? `
+        <div class="mb-4 p-3 bg-blue-50 rounded-lg">
+          <label class="block font-semibold mb-2 text-blue-700">🎢 Sélectionnez l'attraction:</label>
+          <select id="selected-attraction" class="w-full p-2 border rounded-lg">
+            ${optionsHtml}
+          </select>
+        </div>
+      ` : `<div class="text-center p-3 bg-blue-50 rounded-lg mb-4">
+        <span class="text-blue-700 font-semibold">🎢 ${items[0] || 'Attraction'}</span>
+      </div>`;
+      
+      document.getElementById('form-title').textContent = 'Évaluez une attraction';
+      document.getElementById('form-modal').classList.remove('hidden');
+      document.getElementById('form-content').innerHTML = `
+        <div class="space-y-6">
+          ${selectHtml}
+          <div class="form-section">
+            <h4><span>🔹</span> Qualité globale</h4>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="setReponse('attraction_qualite', 'Excellente', this)" class="option-btn">Excellente</button>
+              <button onclick="setReponse('attraction_qualite', 'Bonne', this)" class="option-btn">Bonne</button>
+              <button onclick="setReponse('attraction_qualite', 'Moyenne', this)" class="option-btn">Moyenne</button>
+              <button onclick="setReponse('attraction_qualite', 'Décevante', this)" class="option-btn">Décevante</button>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4><span>🔹</span> Affluence</h4>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="setReponse('attraction_affluence', 'Très calme', this)" class="option-btn">Très calme</button>
+              <button onclick="setReponse('attraction_affluence', 'Calme', this)" class="option-btn">Calme</button>
+              <button onclick="setReponse('attraction_affluence', 'Modérée', this)" class="option-btn">Modérée</button>
+              <button onclick="setReponse('attraction_affluence', 'Fortement fréquenté', this)" class="option-btn">Fortement fréquenté</button>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4><span>🔹</span> Rapport qualité/prix</h4>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="setReponse('attraction_prix', 'Très raisonnable', this)" class="option-btn">Très raisonnable</button>
+              <button onclick="setReponse('attraction_prix', 'Raisonnable', this)" class="option-btn">Raisonnable</button>
+              <button onclick="setReponse('attraction_prix', 'Cher', this)" class="option-btn">Cher</button>
+              <button onclick="setReponse('attraction_prix', 'Très cher', this)" class="option-btn">Très cher</button>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4><span>🔹</span> Infrastructure</h4>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="setReponse('attraction_infra', 'Excellente', this)" class="option-btn">Excellente</button>
+              <button onclick="setReponse('attraction_infra', 'Bonne', this)" class="option-btn">Bonne</button>
+              <button onclick="setReponse('attraction_infra', 'Passable', this)" class="option-btn">Passable</button>
+              <button onclick="setReponse('attraction_infra', 'Insuffisante', this)" class="option-btn">Insuffisante</button>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4><span>🔹</span> Temps de visite</h4>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="setReponse('attraction_temps', 'Moins de 1h', this)" class="option-btn">Moins de 1h</button>
+              <button onclick="setReponse('attraction_temps', '1-2h', this)" class="option-btn">1-2h</button>
+              <button onclick="setReponse('attraction_temps', '2-3h', this)" class="option-btn">2-3h</button>
+              <button onclick="setReponse('attraction_temps', 'Plus de 3h', this)" class="option-btn">Plus de 3h</button>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4><span>🔹</span> Description / Commentaire</h4>
+            <textarea id="attraction_description" class="w-full p-3 border rounded-lg min-h-[80px]" placeholder="Décrivez votre expérience..."></textarea>
+          </div>
+
+          <button onclick="submitAttractionAvis()" class="btn-primary w-full">Soumettre</button>
+        </div>
+      `;
+    }
+
+    function showEvenementForm(itemName) {
+      window.currentEvenementName = itemName || '';
+      const items = itemName ? itemName.split(',').map(s => s.trim()) : [];
+      const optionsHtml = items.map(item => `<option value="${item.replace(/"/g, '&quot;')}">${item}</option>`).join('');
+      
+      const selectHtml = items.length > 1 ? `
+        <div class="mb-4 p-3 bg-purple-50 rounded-lg">
+          <label class="block font-semibold mb-2 text-purple-700">🎪 Sélectionnez l'événement:</label>
+          <select id="selected-evenement" class="w-full p-2 border rounded-lg">
+            ${optionsHtml}
+          </select>
+        </div>
+      ` : `<div class="text-center p-3 bg-purple-50 rounded-lg mb-4">
+        <span class="text-purple-700 font-semibold">🎪 ${items[0] || 'Événement'}</span>
+      </div>`;
+      
+      document.getElementById('form-title').textContent = 'Évaluez un événement';
+      document.getElementById('form-modal').classList.remove('hidden');
+      document.getElementById('form-content').innerHTML = `
+        <div class="space-y-6">
+          ${selectHtml}
+          <div class="form-section">
+            <h4><span>🔹</span> Qualité globale</h4>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="setReponse('evenement_qualite', 'Excellente', this)" class="option-btn">Excellente</button>
+              <button onclick="setReponse('evenement_qualite', 'Bonne', this)" class="option-btn">Bonne</button>
+              <button onclick="setReponse('evenement_qualite', 'Moyenne', this)" class="option-btn">Moyenne</button>
+              <button onclick="setReponse('evenement_qualite', 'Décevante', this)" class="option-btn">Décevante</button>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4><span>🔹</span> Organisation</h4>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="setReponse('evenement_orga', 'Parfait', this)" class="option-btn">Parfait</button>
+              <button onclick="setReponse('evenement_orga', 'Bien', this)" class="option-btn">Bien</button>
+              <button onclick="setReponse('evenement_orga', 'Moyen', this)" class="option-btn">Moyen</button>
+              <button onclick="setReponse('evenement_orga', 'Médiocre', this)" class="option-btn">Médiocre</button>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4><span>🔹</span> Affluence</h4>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="setReponse('evenement_affluence', 'Pas du tout bondé', this)" class="option-btn">Pas du tout bondé</button>
+              <button onclick="setReponse('evenement_affluence', 'Peu fréquenté', this)" class="option-btn">Peu fréquenté</button>
+              <button onclick="setReponse('evenement_affluence', 'Complet', this)" class="option-btn">Complet</button>
+              <button onclick="setReponse('evenement_affluence', 'Surpeuplé', this)" class="option-btn">Surpeuplé</button>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4><span>🔹</span> Prix des billets</h4>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="setReponse('evenement_prix', 'Gratuit', this)" class="option-btn">Gratuit</button>
+              <button onclick="setReponse('evenement_prix', 'Abordable', this)" class="option-btn">Abordable</button>
+              <button onclick="setReponse('evenement_prix', 'Cher', this)" class="option-btn">Cher</button>
+              <button onclick="setReponse('evenement_prix', 'Très cher', this)" class="option-btn">Très cher</button>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <h4><span>🔹</span> Respect du timing</h4>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="setReponse('evenement_timing', 'À l\'heure', this)" class="option-btn">À l'heure</button>
+              <button onclick="setReponse('evenement_timing', 'En retard', this)" class="option-btn">En retard</button>
+              <button onclick="setReponse('evenement_timing', 'Annulé', this)" class="option-btn">Annulé</button>
+            </div>
+          </div>
+
+<div class="form-section">
+            <h4><span>🔹</span> Description / Commentaire</h4>
+            <textarea id="evenement_description" class="w-full p-3 border rounded-lg min-h-[80px]" placeholder="Décrivez votre expérience..."></textarea>
+          </div>
+
+          <button onclick="submitEvenementAvis()" class="btn-primary w-full">Soumettre</button>
+        </div>
+      `;
+    }
+
+    async function submitAttractionAvis() {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const comment = document.getElementById('attraction_description') ? document.getElementById('attraction_description').value : '';
+      
+      // Get attraction name
+      const selectEl = document.getElementById('selected-attraction');
+      let attractionName = selectEl ? selectEl.value : '';
+      if (!attractionName && window.currentAttractionName) {
+        attractionName = window.currentAttractionName;
+      }
+      
+      // Get attraction ID by name from API
+      let attractionId = '';
+      try {
+        const res = await fetch('api/attractions.php?nom=' + encodeURIComponent(attractionName));
+        const data = await res.json();
+        if (data.success && data.attractions && data.attractions.length > 0) {
+          attractionId = data.attractions[0].id;
+        }
+      } catch(e) {
+        console.error('Error getting attraction ID:', e);
+      }
+      
+      if (!attractionId) {
+        alert('Attraction non trouvée');
+        return;
+      }
+      
+      try {
+        const res = await fetch('api/insert-avis.php', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            type: 'attraction',
+            attraction_id: attractionId,
+            logement_id: selectedReservation.id_logement,
+            note: 4,
+            comment: comment,
+            email: user.email
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          // Save to local storage for tracking
+          if (!userAvis.attractionItems[selectedReservation.id_reservation || selectedReservation.id]) {
+            userAvis.attractionItems[selectedReservation.id_reservation || selectedReservation.id] = [];
+          }
+          const attrName = window.currentAttractionName || '';
+          if (attrName && !userAvis.attractionItems[selectedReservation.id_reservation || selectedReservation.id].includes(attrName)) {
+            userAvis.attractionItems[selectedReservation.id_reservation || selectedReservation.id].push(attrName);
+          }
+          localStorage.setItem('userAvis', JSON.stringify(userAvis));
+          
+          alert('Merci! Votre avis sur l\'attraction a été enregistré.');
+          closeFormModal();
+          // Force refresh the buttons by calling render immediately
+          renderAllReservations();
+        } else {
+          alert('Erreur: ' + data.error);
+        }
+      } catch (err) {
+        alert('Erreur lors de l\'enregistrement');
+      }
+    }
+
+    async function submitEvenementAvis() {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const comment = document.getElementById('evenement_description') ? document.getElementById('evenement_description').value : '';
+      
+      // Get event name
+      let evenementName = '';
+      if (window.currentEvenementName) {
+        evenementName = window.currentEvenementName;
+      }
+      
+      // Get event ID by name
+      let evenementId = '';
+      try {
+        const res = await fetch('api/evenements.php?nom=' + encodeURIComponent(evenementName));
+        const data = await res.json();
+        if (data.success && data.evenements && data.evenements.length > 0) {
+          evenementId = data.evenements[0].id;
+        }
+      } catch(e) {
+        console.error('Error getting evenement ID:', e);
+      }
+      
+      if (!evenementId) {
+        alert('Evenement non trouve');
+        return;
+      }
+      
+      try {
+        const res = await fetch('api/insert-avis.php', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            type: 'evenement',
+            evenement_id: evenementId,
+            logement_id: selectedReservation.id_logement,
+            note: 4,
+            comment: comment,
+            email: user.email
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          // Save to local storage for tracking
+          if (!userAvis.evenementItems[selectedReservation.id_reservation || selectedReservation.id]) {
+            userAvis.evenementItems[selectedReservation.id_reservation || selectedReservation.id] = [];
+          }
+          const evtName = window.currentEvenementName || '';
+          if (evtName && !userAvis.evenementItems[selectedReservation.id_reservation || selectedReservation.id].includes(evtName)) {
+            userAvis.evenementItems[selectedReservation.id_reservation || selectedReservation.id].push(evtName);
+          }
+          localStorage.setItem('userAvis', JSON.stringify(userAvis));
+          
+          alert('Merci! Votre avis sur l\'événement a été enregistré.');
+          closeFormModal();
+          fetchReservations();
+        } else {
+          alert('Erreur: ' + data.error);
+        }
+      } catch (err) {
+        alert('Erreur lors de l\'enregistrement');
+      }
+    }
+
+    function closeFormModal() {
+      document.getElementById('form-modal').classList.add('hidden');
+    }
+
+    fetchReservations();
+  </script>
+</body>
+</html>

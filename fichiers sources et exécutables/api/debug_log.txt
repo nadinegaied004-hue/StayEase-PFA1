@@ -1,0 +1,31 @@
+Array
+(
+    [sql] => SELECT l.*, 
+                p.NOM_PROP,
+                p.PRENOM_PROP,
+                GROUP_CONCAT(DISTINCT a.NOM_ATTRACTION SEPARATOR '|||') as attractions_list,
+                GROUP_CONCAT(DISTINCT a.LOCALISATION SEPARATOR '|||') as attractions_localisation,
+                GROUP_CONCAT(DISTINCT a.DESCRIPTION SEPARATOR '|||') as attractions_description,
+                GROUP_CONCAT(DISTINCT a.IMAGE_ATTR SEPARATOR '|||') as attractions_image,
+                GROUP_CONCAT(DISTINCT a.DISTANCE_KM SEPARATOR '|||') as attractions_distance,
+                GROUP_CONCAT(DISTINCT e.NOM_EVENEMENT SEPARATOR '|||') as evenements_list,
+                GROUP_CONCAT(DISTINCT CONCAT(e.DATE_DEB_EV, '->', e.DATE_FIN_EV) SEPARATOR '|||') as evenements_dates,
+                GROUP_CONCAT(DISTINCT e.DESCRIPTION SEPARATOR '|||') as evenements_desc,
+                GROUP_CONCAT(DISTINCT e.LIEU_EVENEMENT SEPARATOR '|||') as evenements_lieu,
+                GROUP_CONCAT(DISTINCT CONCAT(e.PRIX_MIN_BILLET, '-', e.PRIX_MAX_BILLET) SEPARATOR '|||') as evenements_prix
+            FROM logement l 
+            LEFT JOIN proprietaire p ON l.ID_PROPRIETAIRE = p.ID_PROPRIETAIRE
+            LEFT JOIN attraction_et_reference a ON a.LOCALISATION = l.VILLE_LOG OR a.VILLE_ATT = l.VILLE_LOG
+            LEFT JOIN evenement e ON e.VILLE_EV = l.VILLE_LOG
+            WHERE (l.STATUT_LOG = 'disponible' OR l.STATUT_LOG IS NULL) AND l.TYPE_LOG = ? GROUP BY l.ID_LOGEMENT ORDER BY l.ID_LOGEMENT ASC
+    [params] => Array
+        (
+            [0] => hotel
+        )
+
+    [get] => Array
+        (
+            [categorie] => Hôtel
+        )
+
+)

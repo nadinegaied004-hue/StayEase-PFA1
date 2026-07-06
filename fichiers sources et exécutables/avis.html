@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StayEase - Avis Clients</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="styles.css">
+  <script src="navbar.js"></script>
+</head>
+<body style="margin:0;min-height:100vh;display:flex;flex-direction:column;font-family:system-ui,sans-serif;">
+  <div id="navbar" style="flex:none;"></div>
+
+  <main class="flex-1 container mx-auto px-4 py-10">
+    <h2 class="section-title text-center mb-2">Les avis des clients</h2>
+    <p class="text-muted-foreground text-center mb-6" data-i18n="Découvrez ce que nos visiteurs pensent">Découvrez ce que nos visiteurs pensent</p>
+
+    <!-- Tab buttons -->
+    <div class="flex flex-wrap gap-2 justify-center mb-6">
+      <button onclick="setActiveTab('logements')" id="tab-logements" class="px-4 py-2 rounded-lg text-sm font-medium bg-orange-500 text-white">
+        <span data-i18n="Logements">Logements</span>
+      </button>
+      <button onclick="setActiveTab('evenements')" id="tab-evenements" class="px-4 py-2 rounded-lg text-sm font-medium bg-orange-100 text-orange-700 hover:bg-orange-200">
+        <span data-i18n="Événements">Événements</span>
+      </button>
+      <button onclick="setActiveTab('attractions')" id="tab-attractions" class="px-4 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-700 hover:bg-blue-200">
+        <span data-i18n="Attractions">Attractions</span>
+      </button>
+    </div>
+
+    <!-- Filters for Logements -->
+    <div id="filters-logements" class="flex flex-wrap gap-2 justify-center mb-8">
+      <button onclick="filterByCategory(null)" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-primary text-white" data-i18n="Tous">Tous</button>
+      <button onclick="filterByCategory('Hôtel')" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-muted hover:bg-muted/80" data-i18n="Hôtel">Hôtel</button>
+      <button onclick="filterByCategory('Maison')" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-muted hover:bg-muted/80" data-i18n="Maison">Maison</button>
+      <button onclick="filterByCategory('Maison d\'hôtes')" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-muted hover:bg-muted/80" data-i18n="Maison d'hôtes">Maison d'hôtes</button>
+      <button onclick="filterByCategory('Ferme')" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-muted hover:bg-muted/80" data-i18n="Ferme">Ferme</button>
+    </div>
+
+    <!-- Filters for Evenements -->
+    <div id="filters-evenements" class="hidden flex flex-wrap gap-2 justify-center mb-8">
+      <button onclick="filterByEvenement(null)" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-orange-500 text-white" data-i18n="Tous">Tous</button>
+      <div id="evenement-filters"></div>
+    </div>
+
+    <!-- Filters for Attractions -->
+    <div id="filters-attractions" class="hidden flex flex-wrap gap-2 justify-center mb-8">
+      <button onclick="filterByAttraction(null)" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-500 text-white" data-i18n="Tous">Tous</button>
+      <div id="attraction-filters"></div>
+    </div>
+
+    <!-- Reviews Grid -->
+    <div id="reviews-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+      <!-- Populated by JS -->
+    </div>
+
+    <!-- User actions -->
+    <div id="user-actions" class="hidden text-center">
+      <h3 id="user-action-title" class="text-xl font-semibold mb-4">Veuillez entrer votre avis</h3>
+      <p class="text-muted-foreground mb-6">Sélectionnez le logement</p>
+      <a href="avis-personnel.html" class="btn-primary inline-flex items-center gap-2">Accéder à mon historique</a>
+    </div>
+</main>
+
+  <div id="footer" style="flex:none;"></div>
+  
+  <script>
+    var currentTab = 'logements';
+    var allAvis = { logements: [], evenements: [], attractions: [] };
+    var filteredAvis = { logement: [], evenement: [], attraction: [] };
+    var currentFilter = { logement: null, evenement: null, attraction: null };
+
+    async function loadAvis() {
+      try {
+        const response = await fetch('api/avis.php?type=logement');
+        const data = await response.json();
+        if (data.success) {
+          allAvis.logements = data.avis || [];
+        }
+      } catch(e) {
+        console.error('Error loading logement avis:', e);
+      }
+
+      try {
+        const response = await fetch('api/avis.php?type=evenement');
+        const data = await response.json();
+        if (data.success) {
+          allAvis.evenements = data.avis || [];
+        }
+      } catch(e) {
+        console.error('Error loading evenement avis:', e);
+      }
+
+      try {
+        const response = await fetch('api/avis.php?type=attraction');
+        const data = await response.json();
+        if (data.success) {
+          allAvis.attractions = data.avis || [];
+        }
+      } catch(e) {
+        console.error('Error loading attraction avis:', e);
+      }
+
+      filteredAvis.logement = allAvis.logements;
+      filteredAvis.evenement = allAvis.evenements;
+      filteredAvis.attraction = allAvis.attractions;
+
+      // Check URL params for filtering specific logement
+      const urlParams = new URLSearchParams(window.location.search);
+      const filterLogementId = urlParams.get('logement_id');
+      if (filterLogementId) {
+        var targetId = parseInt(filterLogementId);
+        filteredAvis.logement = allAvis.logements.filter(function(a) { 
+          return parseInt(a.id_logement) === targetId; 
+        });
+        currentTab = 'logements';
+        document.getElementById('filters-logements').classList.add('hidden');
+        document.getElementById('filters-evenements').classList.add('hidden');
+        document.getElementById('filters-attractions').classList.add('hidden');
+      } else {
+        const filterLogement = urlParams.get('logement');
+        if (filterLogement) {
+          filteredAvis.logement = allAvis.logements.filter(a => a.ville_log === filterLogement || a.categorie === filterLogement);
+          currentTab = 'logements';
+          document.getElementById('filters-logements').classList.remove('hidden');
+          document.getElementById('filters-evenements').classList.add('hidden');
+          document.getElementById('filters-attractions').classList.add('hidden');
+        }
+      }
+
+      renderAvis();
+      populateEventFilters();
+      populateAttractionFilters();
+    }
+    
+    function populateEventFilters() {
+      var container = document.getElementById('evenement-filters');
+      container.innerHTML = '';
+      var uniqueEvents = {};
+      allAvis.evenements.forEach(function(a) {
+        if (a.nom_evenement) uniqueEvents[a.nom_evenement] = true;
+      });
+      Object.keys(uniqueEvents).sort().forEach(function(ev) {
+        var btn = document.createElement('button');
+        btn.textContent = ev;
+        btn.onclick = function() { filterByEvenement(ev); };
+        btn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700 hover:bg-gray-300';
+        container.appendChild(btn);
+      });
+    }
+    
+    function populateAttractionFilters() {
+      var container = document.getElementById('attraction-filters');
+      container.innerHTML = '';
+      var uniqueAttractions = {};
+      allAvis.attractions.forEach(function(a) {
+        if (a.nom_attraction) uniqueAttractions[a.nom_attraction] = true;
+      });
+      Object.keys(uniqueAttractions).sort().forEach(function(att) {
+        var btn = document.createElement('button');
+        btn.textContent = att;
+        btn.onclick = function() { filterByAttraction(att); };
+        btn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700 hover:bg-gray-300';
+        container.appendChild(btn);
+      });
+    }
+
+    function setActiveTab(tab) {
+      currentTab = tab;
+      document.getElementById('tab-logements').className = 'px-4 py-2 rounded-lg text-sm font-medium ' + (tab === 'logements' ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-700 hover:bg-orange-200');
+      document.getElementById('tab-evenements').className = 'px-4 py-2 rounded-lg text-sm font-medium ' + (tab === 'evenements' ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-700 hover:bg-orange-200');
+      document.getElementById('tab-attractions').className = 'px-4 py-2 rounded-lg text-sm font-medium ' + (tab === 'attractions' ? 'bg-blue-500 text-white' : 'bg-blue-100 text-blue-700 hover:bg-blue-200');
+
+      document.getElementById('filters-logements').classList.toggle('hidden', tab !== 'logements');
+      document.getElementById('filters-evenements').classList.toggle('hidden', tab !== 'evenements');
+      document.getElementById('filters-attractions').classList.toggle('hidden', tab !== 'attractions');
+
+      renderAvis();
+    }
+
+    var categoryMap = {
+        'Hôtel': 'hotel',
+        'Maison': 'maison',
+        'Maison d\'hôtes': 'maison_hotes',
+        'Ferme': 'ferme'
+      };
+      
+      function filterByCategory(cat) {
+      currentFilter.logement = cat;
+      var dbCat = cat ? categoryMap[cat] : null;
+      filteredAvis.logement = dbCat ? allAvis.logements.filter(a => a.categorie === dbCat) : allAvis.logements;
+      
+      document.querySelectorAll('#filters-logements button').forEach(btn => {
+        var text = btn.textContent.trim();
+        var isSelected = (cat === null && text === 'Tous') || text === cat;
+        btn.className = isSelected 
+          ? 'px-3 py-1.5 rounded-lg text-xs font-medium bg-orange-500 text-white' 
+          : 'px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700 hover:bg-gray-300';
+      });
+      renderAvis();
+    }
+
+    function filterByEvenement(ev) {
+      currentFilter.evenement = ev;
+      filteredAvis.evenement = ev ? allAvis.evenements.filter(a => a.nom_evenement === ev) : allAvis.evenements;
+      
+      document.querySelectorAll('#filters-evenements button').forEach(btn => {
+        var text = btn.textContent.trim();
+        var isSelected = (ev === null && text === 'Tous') || text === ev;
+        btn.className = isSelected 
+          ? 'px-3 py-1.5 rounded-lg text-xs font-medium bg-orange-500 text-white' 
+          : 'px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700 hover:bg-gray-300';
+      });
+      renderAvis();
+    }
+
+    function filterByAttraction(att) {
+      currentFilter.attraction = att;
+      filteredAvis.attraction = att ? allAvis.attractions.filter(a => a.nom_attraction === att) : allAvis.attractions;
+      
+      document.querySelectorAll('#filters-attractions button').forEach(btn => {
+        var text = btn.textContent.trim();
+        var isSelected = (att === null && text === 'Tous') || text === att;
+        btn.className = isSelected 
+          ? 'px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-500 text-white' 
+          : 'px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700 hover:bg-gray-300';
+      });
+      renderAvis();
+    }
+
+    function renderAvis() {
+      const grid = document.getElementById('reviews-grid');
+      let avis = [];
+      
+      if (currentTab === 'logements') avis = filteredAvis.logement;
+      else if (currentTab === 'evenements') avis = filteredAvis.evenement;
+      else if (currentTab === 'attractions') avis = filteredAvis.attraction;
+
+      if (avis.length === 0) {
+        grid.innerHTML = '<div class="col-span-full text-center py-12 text-muted-foreground">Aucun avis trouvé</div>';
+        return;
+      }
+
+grid.innerHTML = avis.map(a => {
+        if (currentTab === 'logements') {
+          const stars = '★'.repeat(Math.round(a.note_globale_log || 0)) + '☆'.repeat(5 - Math.round(a.note_globale_log || 0));
+          const auteur = (a.prenom_locataire || '') + ' ' + (a.nom_locataire || '');
+          const auteurTrim = auteur.trim().toLowerCase();
+          const userName = currentUser ? ((currentUser.prenom || '') + ' ' + (currentUser.nom || '')).trim().toLowerCase() : '';
+          const isOwn = currentUser && auteurTrim === userName;
+          const actionBtns = isOwn ? `
+            <div class="flex gap-2 mt-2">
+              <button onclick="editAvis('logement', ${a.id_avis}, '${(a.contenu_log || '').replace(/'/g, "\\'")}', ${a.note_globale_log})" class="text-xs text-blue-600 hover:underline">✏️ Modifier</button>
+              <button onclick="deleteAvis('logement', ${a.id_avis})" class="text-xs text-red-600 hover:underline">🗑️ Supprimer</button>
+            </div>
+          ` : '';
+          return `
+            <div class="bg-white rounded-xl shadow-sm border border-border p-6 hover:shadow-md transition-shadow">
+              <div class="flex items-center gap-2 mb-3 pb-3 border-b">
+                <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                  <span class="text-orange-600 font-bold">${(a.prenom_locataire || 'A')[0]}${(a.nom_locataire || 'A')[0]}</span>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900">${auteur.trim() || 'Anonyme'}</p>
+                  <p class="text-xs text-muted-foreground">${a.nom_logement || ''} - ${a.ville_log || ''}</p>
+                </div>
+              </div>
+              <div class="text-yellow-500 text-lg mb-2">${stars}</div>
+              <p class="text-sm text-muted-foreground">${a.contenu_log || ''}</p>
+              ${actionBtns}
+              <p class="text-xs text-muted-foreground mt-3 text-right">${a.derniere_maj_log || ''}</p>
+            </div>
+          `;
+        } else if (currentTab === 'evenements') {
+          const stars = '★'.repeat(Math.round(a.note_globale_ev || 0)) + '☆'.repeat(5 - Math.round(a.note_globale_ev || 0));
+          const auteur = (a.prenom_locataire || '') + ' ' + (a.nom_locataire || '');
+          const auteurTrim = auteur.trim().toLowerCase();
+          const userName = currentUser ? ((currentUser.prenom || '') + ' ' + (currentUser.nom || '')).trim().toLowerCase() : '';
+          const isOwn = currentUser && auteurTrim === userName;
+          const actionBtns = isOwn ? `
+            <div class="flex gap-2 mt-2">
+              <button onclick="editAvis('evenement', ${a.id_avis}, '${(a.contenu || '').replace(/'/g, "\\'")}', ${a.note_globale_ev})" class="text-xs text-blue-600 hover:underline">✏️ Modifier</button>
+              <button onclick="deleteAvis('evenement', ${a.id_avis})" class="text-xs text-red-600 hover:underline">🗑️ Supprimer</button>
+            </div>
+          ` : '';
+          return `
+            <div class="bg-white rounded-xl shadow-sm border border-border p-6 hover:shadow-md transition-shadow">
+              <div class="flex items-center gap-2 mb-3 pb-3 border-b">
+                <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                  <span class="text-orange-600 font-bold">${(a.prenom_locataire || 'A')[0]}${(a.nom_locataire || 'A')[0]}</span>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900">${auteur.trim() || 'Anonyme'}</p>
+                  <p class="text-xs text-muted-foreground">${a.nom_evenement || ''}</p>
+                </div>
+              </div>
+              <div class="text-yellow-500 text-lg mb-2">${stars}</div>
+              <p class="text-sm text-muted-foreground">${a.contenu || ''}</p>
+              ${actionBtns}
+              <p class="text-xs text-muted-foreground mt-3 text-right">${a.derniere_maj_ev || ''}</p>
+            </div>
+          `;
+        } else {
+          const stars = '★'.repeat(Math.round(a.note_globale_att || 0)) + '☆'.repeat(5 - Math.round(a.note_globale_att || 0));
+          const auteur = (a.prenom_locataire || '') + ' ' + (a.nom_locataire || '');
+          const auteurTrim = auteur.trim().toLowerCase();
+          const userName = currentUser ? ((currentUser.prenom || '') + ' ' + (currentUser.nom || '')).trim().toLowerCase() : '';
+          const isOwn = currentUser && auteurTrim === userName;
+          const actionBtns = isOwn ? `
+            <div class="flex gap-2 mt-2">
+              <button onclick="editAvis('attraction', ${a.id_avis_att}, '${(a.contenu_att || '').replace(/'/g, "\\'")}', ${a.note_globale_att})" class="text-xs text-blue-600 hover:underline">✏️ Modifier</button>
+              <button onclick="deleteAvis('attraction', ${a.id_avis_att})" class="text-xs text-red-600 hover:underline">🗑️ Supprimer</button>
+            </div>
+          ` : '';
+          return `
+            <div class="bg-white rounded-xl shadow-sm border border-border p-6 hover:shadow-md transition-shadow">
+              <div class="flex items-center gap-2 mb-3 pb-3 border-b">
+                <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                  <span class="text-orange-600 font-bold">${(a.prenom_locataire || 'A')[0]}${(a.nom_locataire || 'A')[0]}</span>
+                </div>
+                <div>
+                  <p class="font-semibold text-gray-900">${auteur.trim() || 'Anonyme'}</p>
+                  <p class="text-xs text-muted-foreground">${a.nom_attraction || ''}</p>
+                </div>
+              </div>
+              <div class="text-yellow-500 text-lg mb-2">${stars}</div>
+              <p class="text-sm text-muted-foreground">${a.contenu_att || ''}</p>
+              ${actionBtns}
+              <p class="text-xs text-muted-foreground mt-3 text-right">${a.derniere_maj_att || ''}</p>
+            </div>
+          `;
+        }
+      }).join('');
+    }
+
+    // Check if user is logged in
+    var currentUser = null;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      var userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          currentUser = JSON.parse(userStr);
+          document.getElementById('user-actions').classList.remove('hidden');
+          var titleEl = document.getElementById('user-action-title');
+          if (titleEl) {
+            titleEl.textContent = 'Veuillez entrer votre avis, ' + (currentUser.prenom || '') + ' ' + (currentUser.nom || '');
+          }
+        } catch(e) {
+          console.error('Error parsing user data:', e);
+        }
+      }
+      loadAvis();
+    });
+
+    function deleteAvis(type, id) {
+      if (!confirm('Êtes-vous sûr de vouloir supprimer cet avis?')) return;
+      
+      fetch('api/delete-avis.php?type=' + type + '&id=' + id, {
+        method: 'DELETE'
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert('Avis supprimé avec succès');
+          
+          // Clear localStorage to force refresh on next load
+          localStorage.removeItem('userAvis');
+          
+          // Redirect to refresh everything
+          window.location.href = 'avis-personnel.html';
+        } else {
+          alert('Erreur: ' + data.error);
+        }
+      })
+      .catch(err => {
+        console.error('Error:', err);
+        alert('Erreur lors de la suppression');
+      });
+    }
+
+    function editAvis(type, id, oldContent, oldNote) {
+      var newContent = prompt('Modifier votre commentaire:', oldContent);
+      if (newContent === null) return;
+      
+      var newNote = prompt('Modifier la note (1-5):', oldNote);
+      if (newNote === null) return;
+      
+      fetch('api/update-avis.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          type: type,
+          id: id,
+          contenu: newContent,
+          note: newNote
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert('Avis modifié avec succès');
+          loadAvis();
+        } else {
+          alert('Erreur: ' + data.error);
+        }
+      })
+      .catch(err => {
+        console.error('Error:', err);
+        alert('Erreur lors de la modification');
+      });
+    }
+  </script>
+</body>
+</html>

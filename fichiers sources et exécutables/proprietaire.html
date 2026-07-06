@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StayEase - Espace Propriétaire</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+  <script src="navbar.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#e67e22',
+            'primary-hover': '#e67e22',
+            'primary-light': '#fef3e2',
+            'hotel-dark': '#264653',
+            background: '#fdfbf7',
+            card: '#ffffff',
+            muted: '#f8f5f2',
+            'muted-foreground': '#78716c',
+            foreground: '#292524',
+            border: '#e7e5e4',
+            input: '#e7e5e4',
+            accent: '#2a9d8f',
+          },
+          fontFamily: {
+            display: ['Quicksand', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap');
+    body { font-family: 'Quicksand', system-ui, sans-serif; background-color: #fdfbf7; color: #292524; }
+    body.dark { --bg-color: #1c1917; }
+    body.dark { background-color: #1c1917; color: #fafaf9; }
+    body.dark .navbar { background: #ffffff; }
+    body.dark .nav-link { color: #fafaf9; }
+    body.dark .nav-link:hover { background-color: #44403c; }
+    body.dark .nav-link-active { background-color: #422006; color: #e67e22; }
+    body.dark .desktop-nav { background: #292524; }
+    body.dark .lang-menu { background: #1e293b; border-color: #334155; }
+    body.dark .lang-menu button:hover { background-color: #334155; }
+    
+    .navbar { background: white; box-shadow: 0 2px 20px rgba(0,0,0,0.05); position: fixed; top: 0; left: 0; right: 0; z-index: 50; }
+    .nav-link { 
+      padding: 0.6rem 1.2rem; 
+      border-radius: 50px; 
+      color: #292524; 
+      transition: all 0.3s ease; 
+      font-weight: 500;
+    }
+    .nav-link:hover { background-color: #f8f5f2; color: #e67e22; }
+    .nav-link-active { background-color: #fef3e2; color: #e67e22; }
+    .lang-menu { 
+      position: absolute; 
+      right: 0; 
+      top: 100%; 
+      margin-top: 0.5rem; 
+      background: white; 
+      border: 1px solid #e7e5e4; 
+      border-radius: 16px; 
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1); 
+      min-width: 8rem; 
+      z-index: 50; 
+      padding: 0.5rem;
+    }
+    .lang-menu button { 
+      display: block; 
+      width: 100%; 
+      text-align: left; 
+      padding: 0.75rem 1rem; 
+      font-size: 0.95rem; 
+      border-radius: 12px;
+    }
+    .lang-menu button:hover { background-color: #f8f5f2; }
+    .mobile-menu { background: white; border-bottom: 1px solid #e7e5e4; }
+    .theme-btn { cursor: pointer; padding: 0.5rem; border-radius: 50px; }
+    .theme-btn:hover { background-color: #f8f5f2; }
+    @media (max-width: 768px) { .desktop-nav { display: none; } .mobile-menu-btn { display: block; } }
+    @media (min-width: 769px) { .mobile-menu { display: none !important; } .mobile-menu-btn { display: none; } }
+    
+    
+    
+    .input-field {
+    @media (min-width: 769px) { .mobile-menu { display: none !important; } .mobile-menu-btn { display: none; } }
+    
+    .input-field { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; font-size: 0.875rem; }
+    .input-field:focus { outline: none; border-color: #e67e22; }
+    .section-title { font-size: 1.5rem; font-weight: 700; color: #1a1a2e; }
+    .btn-outline { display: inline-flex; align-items: center; justify-content: center; padding: 0.5rem 1rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; font-weight: 500; transition: all 0.2s; cursor: pointer; }
+    .btn-outline:hover { background-color: #f5f5f5; }
+  </style>
+</head>
+<body style="margin:0;min-height:100vh;display:flex;flex-direction:column;font-family:system-ui,sans-serif;">
+  <div id="navbar" style="flex:none;"></div>
+
+  <main class="flex-1 container mx-auto px-4 pb-20" style="margin-top:80px">
+    <h2 class="section-title text-center mb-2">Espace Propriétaire</h2>
+    <p class="text-muted-foreground text-center mb-10">Bienvenue</p>
+
+    <div class="max-w-3xl mx-auto space-y-8">
+      <!-- Nom du logement -->
+      <section class="bg-card rounded-xl border border-border p-6">
+        <h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
+          <span>🏠</span> Sélectionner un logement
+        </h3>
+        <select id="logement-select" class="input-field" onchange="selectLogement(this.value)">
+          <option value="">-- Choisir un logement --</option>
+        </select>
+      </section>
+
+      <!-- Photos / Vidéos -->
+      <section class="bg-card rounded-xl border border-border p-6">
+        <h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
+          <span>📤</span> Photos / Vidéos du logement
+        </h3>
+        <div id="photos-list" class="flex flex-wrap gap-2 mb-4"></div>
+        <button onclick="addPhoto()" class="flex items-center gap-2 px-4 py-2 rounded-lg border border-dashed border-border text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors">
+          <span>📷</span> Télécharger
+        </button>
+      </section>
+
+      <!-- Description -->
+      <section class="bg-card rounded-xl border border-border p-6">
+        <h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
+          <span>📝</span> Description du logement
+        </h3>
+        <textarea id="description" class="input-field min-h-[120px] text-sm" placeholder="Décrivez votre logement..."></textarea>
+      </section>
+
+      <!-- Annonces attractions -->
+      <section class="bg-card rounded-xl border border-border p-6">
+        <h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
+          <span>🎢</span> Annonces des attractions
+        </h3>
+        <p class="text-sm text-muted-foreground mb-4">Musées, parks, monuments, plages...</p>
+        <div id="attractions-list" class="space-y-2 mb-4"></div>
+        <div class="flex gap-2">
+          <input id="attraction-nom" type="text" placeholder="Nom de l'attraction" class="input-field flex-1 !py-2 text-sm">
+          <input id="attraction-distance" type="text" placeholder="Distance (km)" class="input-field w-32 !py-2 text-sm">
+          <button onclick="addAttraction()" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90">Ajouter</button>
+        </div>
+      </section>
+
+      <!-- Annonces événements -->
+      <section class="bg-card rounded-xl border border-border p-6">
+        <h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
+          <span>📅</span> Annonces des événements
+        </h3>
+        <p class="text-sm text-muted-foreground mb-4">Soirées, productions, films, foires, jours nouveaux...</p>
+        <div id="annonces-list" class="space-y-2 mb-4"></div>
+        <div class="flex gap-2">
+          <input id="annonce-titre" type="text" placeholder="Titre de l'événement" class="input-field flex-1 !py-2 text-sm">
+          <input id="annonce-date" type="text" placeholder="Date (JJ/MM/AAAA)" class="input-field w-40 !py-2 text-sm">
+          <button onclick="addAnnonce()" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90">Ajouter</button>
+        </div>
+      </section>
+
+      <!-- Save -->
+      <button onclick="saveChanges()" class="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-primary text-white font-semibold hover:bg-primary/90 transition-colors">
+        <span>💾</span> Mettre à jour
+      </button>
+    </div>
+</main>
+
+  <div id="footer" style="flex:none;"></div>
+
+  <script>
+    let evenements = [];
+    let attractions = [];
+    let photos = [];
+    let currentLogementId = null;
+    let ownerLogements = [];
+    let existingPhoto = '';
+    
+    function selectLogement(id) {
+      currentLogementId = id;
+      if (id) {
+        loadLogementDetails(id);
+      }
+    }
+    
+    async function loadLogementDetails(id) {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user) return;
+      try {
+        const response = await fetch('api/load-proprietaire.php?user_id=' + user.id + '&logement_id=' + id);
+        const result = await response.json();
+        if (result.success && result.logement) {
+          document.getElementById('description').value = result.logement.description || '';
+          existingPhoto = result.logement.images || '';
+          if (existingPhoto) {
+            photos = [existingPhoto];
+            renderPhotos();
+          } else {
+            photos = [];
+          }
+        }
+      } catch (e) { console.error(e); }
+    }
+    
+    async function addPhoto() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*,video/*';
+      input.onchange = async function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          // Upload the file first
+          var formData = new FormData();
+          formData.append('image', file);
+          
+          try {
+            var uploadResponse = await fetch('api/upload-image.php', {
+              method: 'POST',
+              body: formData
+            });
+            var uploadResult = await uploadResponse.json();
+            if (uploadResult.success) {
+              photos = [uploadResult.path];  // Replace instead of push
+              renderPhotos();
+            } else {
+              alert('Erreur upload: ' + (uploadResult.error || 'Inconnue'));
+            }
+          } catch(e) {
+            alert('Erreur lors de l\'upload');
+          }
+        }
+      };
+      input.click();
+    }
+    
+    function renderPhotos() {
+      const container = document.getElementById('photos-list');
+      container.innerHTML = photos.map((p, i) => '<div class="flex items-center gap-2 bg-muted px-3 py-2 rounded"><span>' + p + '</span><button onclick="removePhoto(' + i + ')" class="text-red-500">✕</button></div>').join('');
+    }
+    
+    function removePhoto(index) {
+      photos.splice(index, 1);
+      renderPhotos();
+    }
+    
+    function addAttraction() {
+      const nom = document.getElementById('attraction-nom').value.trim();
+      const distance = document.getElementById('attraction-distance').value.trim();
+      if (!nom) { alert('Veuillez entrer le nom de l\'attraction'); return; }
+      if (!distance) { alert('Veuillez entrer la distance'); return; }
+      attractions.push({ nom: nom, distance: distance });
+      renderAttractions();
+      document.getElementById('attraction-nom').value = '';
+      document.getElementById('attraction-distance').value = '';
+    }
+    
+    function renderAttractions() {
+      const container = document.getElementById('attractions-list');
+      container.innerHTML = attractions.map((a, i) => '<div class="flex items-center justify-between bg-muted px-3 py-2 rounded"><span>' + a.nom + ' (' + a.distance + ' km)</span><button onclick="removeAttraction(' + i + ')" class="text-red-500">✕</button></div>').join('');
+    }
+    
+    function removeAttraction(index) {
+      attractions.splice(index, 1);
+      renderAttractions();
+    }
+    
+    function addAnnonce() {
+      const titre = document.getElementById('annonce-titre').value.trim();
+      const date = document.getElementById('annonce-date').value.trim();
+      if (!titre) { alert('Veuillez entrer le titre'); return; }
+      if (!date) { alert('Veuillez entrer la date'); return; }
+      evenements.push({ titre: titre, date: date });
+      renderEvenements();
+      document.getElementById('annonce-titre').value = '';
+      document.getElementById('annonce-date').value = '';
+    }
+    
+    function renderEvenements() {
+      const container = document.getElementById('annonces-list');
+      container.innerHTML = evenements.map((e, i) => '<div class="flex items-center justify-between bg-muted px-3 py-2 rounded"><span>' + e.titre + ' - ' + e.date + '</span><button onclick="removeAnnonce(' + i + ')" class="text-red-500">✕</button></div>').join('');
+    }
+    
+    function removeAnnonce(index) {
+      evenements.splice(index, 1);
+      renderEvenements();
+    }
+    
+    async function saveChanges() {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user) { alert('Veuillez vous connecter'); return; }
+
+      console.log('Saving with photo:', photos.length > 0 ? photos[0] : 'no photo');
+
+      const response = await fetch('api/save-proprietaire.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user.id,
+          logement_id: currentLogementId,
+          description: document.getElementById('description').value,
+          photo: photos.length > 0 ? photos[0] : '',
+          attractions: attractions,
+          evenements: evenements
+        })
+      });
+
+      const result = await response.json();
+      console.log('Save result:', result);
+      if (result.success) {
+        alert('Modifications enregistrées avec succès!');
+      } else {
+        alert('Erreur: ' + (result.error || 'Erreur inconnue'));
+      }
+    }
+
+    async function loadData() {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user || user.role !== 'proprietaire') return;
+
+      try {
+        const response = await fetch('api/load-proprietaire.php?user_id=' + user.id);
+        const result = await response.json();
+        if (result.success) {
+          ownerLogements = result.logements || [];
+          const select = document.getElementById('logement-select');
+          select.innerHTML = '<option value="">-- Choisir un logement --</option>';
+          ownerLogements.forEach(l => {
+            const opt = document.createElement('option');
+            opt.value = l.id;
+            opt.textContent = l.nom || 'Logement #' + l.id;
+            select.appendChild(opt);
+          });
+          if (ownerLogements.length > 0) {
+            select.value = ownerLogements[0].id;
+            selectLogement(ownerLogements[0].id);
+          }
+        }
+      } catch (e) {
+        console.error('Erreur chargement:', e);
+      }
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
