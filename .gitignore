@@ -18,6 +18,9 @@ Desktop.ini
 # Archives
 *.zip
 
+# PDF reports
+*.pdf
+
 # Debug / Logs
 api/debug_log.txt
 *.log
