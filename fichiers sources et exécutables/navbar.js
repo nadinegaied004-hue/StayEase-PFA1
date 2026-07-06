@@ -1,3 +1,10 @@
+if (!document.querySelector('link[rel="icon"]')) {
+  var link = document.createElement('link');
+  link.rel = 'icon';
+  link.type = 'image/svg+xml';
+  link.href = 'favicon.svg';
+  document.head.appendChild(link);
+}
 // Simple Navbar - Same for ALL pages
 const ORANGE = '#e67e22';
 const navbarHTML = `
