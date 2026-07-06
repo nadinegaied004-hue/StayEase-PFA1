@@ -2,7 +2,9 @@
 
 Plateforme web de reservation d'hebergements touristiques en Tunisie, permettant aux voyageurs de decouvrir, filtrer et reserver des logements, attractions et evenements.
 
-## Apercu
+## Apercu / Demo
+
+[![Demo StayEase](https://img.shields.io/badge/VIDEO-Demo-red?style=for-the-badge&logo=youtube)](https://youtu.be/Deja824jtm8)
 
 StayEase est une application web full-stack developpee dans le cadre du PFA (Projet de Fin d'Annee). Elle propose :
 
