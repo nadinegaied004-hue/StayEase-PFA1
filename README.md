@@ -2,6 +2,8 @@
 
 Plateforme web de reservation d'hebergements touristiques en Tunisie, permettant aux voyageurs de decouvrir, filtrer et reserver des logements, attractions et evenements.
 
+[![Site Live](https://img.shields.io/badge/SITE-Live-brightgreen?style=for-the-badge&logo=googlechrome)](http://stayease.site.je)
+
 ## Apercu / Demo
 
 [![Demo StayEase](https://img.shields.io/badge/VIDEO-Demo-red?style=for-the-badge&logo=youtube)](https://youtu.be/Deja824jtm8)
